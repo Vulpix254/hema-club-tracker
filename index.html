@@ -62,24 +62,923 @@ async function createTournament(){const people=checked(),format=$('tFormat').val
 async function refreshTournament(){if(!state.current)return;try{state.current=await getTournament(state.current.tournament.tournamentId);renderTournament();msg('Tournament refreshed from Google Sheets.','success')}catch(e){msg('Refresh failed: '+e.message,'error')}}
 function matches(){return state.current?.matches||[]}function match(mid){return matches().find(x=>x.matchId===mid)}function ex(mid){return(state.current?.exchanges||[]).filter(x=>x.matchId===mid).sort((a,b)=>String(a.timestamp).localeCompare(String(b.timestamp)))}
 function renderTournament(){if(!state.current)return;$('tView').hidden=false;const t=state.current.tournament;$('tTitle').textContent=t.name;$('tMeta').textContent=`${t.month} ${t.year} · ${t.format==='one_pool'?'One-pool round robin':'Two pools'}${truth(t.finalsEnabled)?' · finals enabled':''}`;poolTables();matchCards();overall();finalButtons()}
-function truth(x){return x===true||String(x)==='true'||x===1||String(x)==='1'}function stats(ms){const s={};ms.forEach(m=>{[m.fighter1,m.fighter2].forEach(n=>s[n]||={name:n,wins:0,losses:0,pts:0,clean:0,dirty:0,bouts:0});s[m.fighter1].pts+=Number(m.fighter1Points||0);s[m.fighter1].clean+=Number(m.fighter1Clean||0);s[m.fighter1].dirty+=Number(m.fighter1Dirty||0);s[m.fighter2].pts+=Number(m.fighter2Points||0);s[m.fighter2].clean+=Number(m.fighter2Clean||0);s[m.fighter2].dirty+=Number(m.fighter2Dirty||0);if(m.status==='completed'){s[m.fighter1].bouts++;s[m.fighter2].bouts++;if(m.winner===m.fighter1){s[m.fighter1].wins++;s[m.fighter2].losses++}else if(m.winner===m.fighter2){s[m.fighter2].wins++;s[m.fighter1].losses++}});return Object.values(s).sort((a,b)=>b.wins-a.wins||b.pts-a.pts||b.clean-a.clean||a.name.localeCompare(b.name))}
-function statTable(rows){return`<div class="scroll"><table><thead><tr><th>#</th><th>Fighter</th><th>W</th><th>L</th><th>Match pts</th><th>Clean</th><th>Dirty</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name)}</td><td>${x.wins}</td><td>${x.losses}</td><td>${x.pts}</td><td>${x.clean}</td><td>${x.dirty}</td></tr>`).join('')}</tbody></table></div>`}
-function poolTables(){const p=matches().filter(m=>m.stage==='Pool'),groups={};p.forEach(m=>(groups[m.pool]||=[]).push(m));$('poolTables').innerHTML=Object.entries(groups).map(([n,ms])=>`<h3>${esc(n)}</h3>${statTable(stats(ms))}`).join('')||'<p class="muted">No pool matches.</p>'}
-function time(n){n=Math.max(0,Math.round(Number(n)||0));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
-function matchCards(){const list=matches().slice().sort((a,b)=>Number(a.matchNumber)-Number(b.matchNumber));$('matchList').innerHTML=list.map(card).join('');list.forEach(bind)}
-function card(m){const done=m.status==='completed',sd=m.status==='sudden_death',q=state.quality[m.matchId]||'clean',p=state.points[m.matchId]||1;return`<article class="card" id="card_${esc(m.matchId)}"><h3>Match ${esc(m.matchNumber)} · ${esc(m.stage)}${m.pool?' · '+esc(m.pool):''} <span class="status">${esc(sd?'sudden death':String(m.status).replace('_',' '))}</span></h3><div class="timer ${sd?'sd':''}" id="timer_${esc(m.matchId)}">${sd?'SUDDEN DEATH':time(m.remainingSeconds)}</div><div class="match-score"><div><div class="fighter">${esc(m.fighter1)}</div><div class="score">${m.fighter1Points}</div><div class="scoremeta">Clean: ${m.fighter1Clean} · Dirty: ${m.fighter1Dirty}</div></div><div class="vs">VS</div><div><div class="fighter">${esc(m.fighter2)}</div><div class="score">${m.fighter2Points}</div><div class="scoremeta">Clean: ${m.fighter2Clean} · Dirty: ${m.fighter2Dirty}</div></div></div>${done?`<p><strong>Winner:</strong> ${esc(m.winner)}${truth(m.suddenDeathRequired)?' — sudden death':''}</p>`:`<div class="button-row"><button class="small start" data-id="${esc(m.matchId)}">${m.status==='not_started'?'Start 2-minute match':'Resume'}</button><button class="small outline pause" data-id="${esc(m.matchId)}">Pause</button><button class="small outline end" data-id="${esc(m.matchId)}">End / check result</button></div><div class="exchange-grid"><div><label>Scoring fighter</label><select id="fighter_${esc(m.matchId)}"><option value="${esc(m.fighter1)}">${esc(m.fighter1)}</option><option value="${esc(m.fighter2)}">${esc(m.fighter2)}</option></select></div><div><label>Exchange</label><div class="choice-row"><button class="small choice quality ${q==='clean'?'selected':''}" data-id="${esc(m.matchId)}" data-q="clean">Clean</button><button class="small choice quality ${q==='dirty'?'selected':''}" data-id="${esc(m.matchId)}" data-q="dirty">Dirty</button></div></div><div><label>Points</label><div class="choice-row"><button class="small choice point ${p===1?'selected':''}" data-id="${esc(m.matchId)}" data-p="1" ${q==='dirty'?'disabled':''}>1 point</button><button class="small choice point ${p===4?'selected':''}" data-id="${esc(m.matchId)}" data-p="4" ${q==='dirty'?'disabled':''}>4 points</button></div></div><div><button class="record" data-id="${esc(m.matchId)}">Record exchange</button></div></div>`}<div class="exchange-log">${ex(m.matchId).length?ex(m.matchId).map(x=>`<div class="exchange"><span>${esc(x.fighter)} — <strong>${esc(x.quality)}</strong> — ${esc(x.points)} pt${Number(x.points)===1?'':'s'}${truth(x.isSuddenDeath)?' · SUDDEN DEATH':''}</span><span>${truth(x.isSuddenDeath)?'SD':time(x.remainingSeconds)+' remaining'}</span></div>`).join(''):'<p class="muted">No scoring exchanges recorded.</p>'}</div></article>`}
-function bind(m){const c=$('card_'+m.matchId);if(!c)return;c.querySelector('.start')?.addEventListener('click',()=>start(m.matchId));c.querySelector('.pause')?.addEventListener('click',()=>pause(m.matchId));c.querySelector('.end')?.addEventListener('click',()=>end(m.matchId));c.querySelector('.record')?.addEventListener('click',()=>record(m.matchId));c.querySelectorAll('.quality').forEach(b=>b.onclick=()=>{state.quality[m.matchId]=b.dataset.q;if(b.dataset.q==='dirty')state.points[m.matchId]=1;matchCards()});c.querySelectorAll('.point').forEach(b=>b.onclick=()=>{state.points[m.matchId]=Number(b.dataset.p);matchCards()})}
-async function saveMatch(m){const r=await api('updateMatch',{match:m},true);Object.assign(m,r.match)}
-async function start(mid){const m=match(mid);if(!m||m.status==='completed'||m.status==='sudden_death')return;if(state.timer)clearInterval(state.timer);if(!m.startedAt)m.startedAt=now();m.status='in_progress';try{await saveMatch(m)}catch(e){msg('Could not start timer: '+e.message,'error');return}state.timerId=mid;state.timer=setInterval(async()=>{const a=match(mid);if(!a||a.status!=='in_progress')return;a.remainingSeconds=Math.max(0,Number(a.remainingSeconds)-1);const d=$('timer_'+mid);if(d)d.textContent=time(a.remainingSeconds);if(a.remainingSeconds===0){clearInterval(state.timer);state.timer=null;state.timerId=null;await expired(mid)}},1000);matchCards()}
-async function pause(mid){const m=match(mid);if(!m)return;if(state.timerId===mid&&state.timer){clearInterval(state.timer);state.timer=null;state.timerId=null}if(m.status==='in_progress'){m.status='paused';try{await saveMatch(m);msg('Timer paused.','info')}catch(e){msg('Could not pause timer: '+e.message,'error')}}matchCards()}
-async function expired(mid){const m=match(mid);if(!m)return;if(Number(m.fighter1Points)===Number(m.fighter2Points)){m.status='sudden_death';m.suddenDeathRequired=true;try{await saveMatch(m);msg('Time expired tied: first scoring exchange wins sudden death.','info')}catch(e){msg(e.message,'error')}}else{m.status='completed';m.winner=Number(m.fighter1Points)>Number(m.fighter2Points)?m.fighter1:m.fighter2;m.endedAt=now();try{await saveMatch(m);msg('Time expired. Winner: '+m.winner,'success')}catch(e){msg(e.message,'error')}}renderTournament()}
-async function end(mid){const m=match(mid);if(!m)return;await pause(mid);if(Number(m.fighter1Points)===Number(m.fighter2Points)){m.status='sudden_death';m.suddenDeathRequired=true;try{await saveMatch(m);msg('Match tied: record the first sudden-death score.','info')}catch(e){msg(e.message,'error')}}else{m.status='completed';m.winner=Number(m.fighter1Points)>Number(m.fighter2Points)?m.fighter1:m.fighter2;m.endedAt=now();try{await saveMatch(m);msg('Winner: '+m.winner,'success')}catch(e){msg(e.message,'error')}}renderTournament();afterMatchCompletion()}
-async function record(mid){const m=match(mid);if(!m||m.status==='completed')return;const sel=$('fighter_'+mid);if(!sel)return msg('Could not find scoring-fighter selector.','error');const fighter=sel.value,q=state.quality[mid]||'clean',p=q==='dirty'?1:(state.points[mid]||1),sd=m.status==='sudden_death';const exchange={tournamentId:m.tournamentId,matchId:mid,exchangeId:uid('exchange'),fighter,quality:q,points:p,remainingSeconds:m.remainingSeconds,isSuddenDeath:sd,timestamp:now()};try{const r=await api('recordExchange',{exchange},true);Object.assign(m,r.match);state.current.exchanges.push(exchange);if(sd){if(state.timer){clearInterval(state.timer);state.timer=null;state.timerId=null}msg('Sudden-death winner: '+fighter,'success');renderTournament();afterMatchCompletion();return}const lead=Math.abs(Number(m.fighter1Points)-Number(m.fighter2Points));if(lead>=9){if(state.timerId===mid&&state.timer){clearInterval(state.timer);state.timer=null;state.timerId=null}m.status='completed';m.winner=Number(m.fighter1Points)>Number(m.fighter2Points)?m.fighter1:m.fighter2;m.endedAt=now();await saveMatch(m);msg('Match ended by 9-point lead: '+m.winner+' wins '+m.fighter1Points+'–'+m.fighter2Points+'.','success');renderTournament();afterMatchCompletion();return}msg('Exchange recorded. Timer continues unless the referee pauses it.','success');renderTournament()}catch(e){msg('Could not record exchange: '+e.message,'error')}}
-function finalButtons(){const t=state.current.tournament,all=matches(),pools=all.filter(m=>m.stage==='Pool'),semis=all.filter(m=>m.stage==='Semi-final'),finals=all.filter(m=>m.stage==='Final'||m.stage==='Third Place');$('makeSemis').hidden=!(t.format==='two_pools'&&truth(t.finalsEnabled)&&pools.length&&pools.every(m=>m.status==='completed')&&!semis.length);$('makeFinals').hidden=!(semis.length===2&&semis.every(m=>m.status==='completed')&&!finals.length)}
-async function createSemis(){const t=state.current.tournament,groups={};matches().filter(m=>m.stage==='Pool').forEach(m=>(groups[m.pool]||=[]).push(m));const a=stats(groups['Pool A']||[]),b=stats(groups['Pool B']||[]);if(a.length<2||b.length<2)return msg('Both pools need at least two fighters.','error');const start=Math.max(...matches().map(m=>Number(m.matchNumber)||0))+1;const add=[newMatch(t.tournamentId,a[0].name,b[1].name,'Semi-final','Finals',start),newMatch(t.tournamentId,b[0].name,a[1].name,'Semi-final','Finals',start+1)];try{await api('appendMatches',{tournamentId:t.tournamentId,matches:add},true);state.current.matches.push(...add);renderTournament();msg('Semi-finals created.','success')}catch(e){msg('Could not create semi-finals: '+e.message,'error')}}
-async function createFinals(){const t=state.current.tournament,semis=matches().filter(m=>m.stage==='Semi-final').sort((a,b)=>Number(a.matchNumber)-Number(b.matchNumber));if(semis.length!==2||!semis.every(m=>m.status==='completed'))return msg('Complete both semi-finals first.','error');const winner1=semis[0].winner,winner2=semis[1].winner,loser1=winner1===semis[0].fighter1?semis[0].fighter2:semis[0].fighter1,loser2=winner2===semis[1].fighter1?semis[1].fighter2:semis[1].fighter1,start=Math.max(...matches().map(m=>Number(m.matchNumber)||0))+1;const add=[newMatch(t.tournamentId,loser1,loser2,'Third Place','Finals',start),newMatch(t.tournamentId,winner1,winner2,'Final','Finals',start+1)];try{await api('appendMatches',{tournamentId:t.tournamentId,matches:add},true);state.current.matches.push(...add);renderTournament();msg('Third-place bout and final created.','success')}catch(e){msg('Could not create finals: '+e.message,'error')}}
-function afterMatchCompletion(){setTimeout(finalButtons,0)}
-function overall(){const t=state.current.tournament;if(t.format==='one_pool'){const r=stats(matches().filter(m=>m.stage==='Pool'));$('podium').innerHTML=r.length>=3?`<div class="podplace"><div class="block second">2</div><strong>${esc(r[1].name)}</strong></div><div class="podplace"><div class="block first">1</div><strong>${esc(r[0].name)}</strong></div><div class="podplace"><div class="block third">3</div><strong>${esc(r[2].name)}</strong></div>`:'';$('overall').innerHTML=statTable(r);return}const final=matches().find(m=>m.stage==='Final'&&m.status==='completed'),third=matches().find(m=>m.stage==='Third Place'&&m.status==='completed');if(final){const first=final.winner,second=final.winner===final.fighter1?final.fighter2:final.fighter1,thirdName=third?third.winner:'';const r=[first,second,...(thirdName?[thirdName]:[])];$('podium').innerHTML=r.length>=3?`<div class="podplace"><div class="block second">2</div><strong>${esc(r[1])}</strong></div><div class="podplace"><div class="block first">1</div><strong>${esc(r[0])}</strong></div><div class="podplace"><div class="block third">3</div><strong>${esc(r[2])}</strong></div>`:'';$('overall').innerHTML=`<table><thead><tr><th>Place</th><th>Fighter</th></tr></thead><tbody>${r.map((n,i)=>`<tr><td>${i+1}</td><td>${esc(n)}</td></tr>`).join('')}</tbody></table>`}else{$('podium').innerHTML='';$('overall').innerHTML='<p class="muted">Complete the pools, then semi-finals, third-place bout and final to display final places.</p>'}}
+function truth(x){return x===true||String(x)==='true'||x===1||String(x)==='1'}function stats(ms) {
+  const s = {};
+
+  ms.forEach(function (m) {
+    [m.fighter1, m.fighter2].forEach(function (name) {
+      if (!s[name]) {
+        s[name] = {
+          name: name,
+          wins: 0,
+          losses: 0,
+          pts: 0,
+          clean: 0,
+          dirty: 0,
+          bouts: 0
+        };
+      }
+    });
+
+    s[m.fighter1].pts += Number(m.fighter1Points || 0);
+    s[m.fighter1].clean += Number(m.fighter1Clean || 0);
+    s[m.fighter1].dirty += Number(m.fighter1Dirty || 0);
+
+    s[m.fighter2].pts += Number(m.fighter2Points || 0);
+    s[m.fighter2].clean += Number(m.fighter2Clean || 0);
+    s[m.fighter2].dirty += Number(m.fighter2Dirty || 0);
+
+    if (m.status === 'completed') {
+      s[m.fighter1].bouts++;
+      s[m.fighter2].bouts++;
+
+      if (m.winner === m.fighter1) {
+        s[m.fighter1].wins++;
+        s[m.fighter2].losses++;
+      } else if (m.winner === m.fighter2) {
+        s[m.fighter2].wins++;
+        s[m.fighter1].losses++;
+      }
+    }
+  });
+
+  return Object.values(s).sort(function (a, b) {
+    return (
+      b.wins - a.wins ||
+      b.pts - a.pts ||
+      b.clean - a.clean ||
+      a.name.localeCompare(b.name)
+    );
+  });
+}
+
+function statTable(rows) {
+  return `
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fighter</th>
+            <th>W</th>
+            <th>L</th>
+            <th>Match pts</th>
+            <th>Clean</th>
+            <th>Dirty</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((x, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${esc(x.name)}</td>
+              <td>${x.wins}</td>
+              <td>${x.losses}</td>
+              <td>${x.pts}</td>
+              <td>${x.clean}</td>
+              <td>${x.dirty}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function poolTables() {
+  const poolMatches = matches().filter(function (m) {
+    return m.stage === 'Pool';
+  });
+
+  const groups = {};
+
+  poolMatches.forEach(function (m) {
+    if (!groups[m.pool]) {
+      groups[m.pool] = [];
+    }
+    groups[m.pool].push(m);
+  });
+
+  $('poolTables').innerHTML =
+    Object.entries(groups).map(function ([name, poolMatchList]) {
+      return `<h3>${esc(name)}</h3>${statTable(stats(poolMatchList))}`;
+    }).join('') ||
+    '<p class="muted">No pool matches.</p>';
+}
+
+function time(n) {
+  n = Math.max(0, Math.round(Number(n) || 0));
+
+  return (
+    String(Math.floor(n / 60)).padStart(2, '0') +
+    ':' +
+    String(n % 60).padStart(2, '0')
+  );
+}
+
+function matchCards() {
+  const list = matches().slice().sort(function (a, b) {
+    return Number(a.matchNumber) - Number(b.matchNumber);
+  });
+
+  $('matchList').innerHTML = list.map(card).join('');
+  list.forEach(bind);
+}
+
+function card(m) {
+  const done = m.status === 'completed';
+  const suddenDeath = m.status === 'sudden_death';
+  const quality = state.quality[m.matchId] || 'clean';
+  const points = state.points[m.matchId] || 1;
+
+  return `
+    <article class="card" id="card_${esc(m.matchId)}">
+      <h3>
+        Match ${esc(m.matchNumber)} · ${esc(m.stage)}
+        ${m.pool ? ' · ' + esc(m.pool) : ''}
+        <span class="status">
+          ${esc(suddenDeath ? 'sudden death' : String(m.status).replace('_', ' '))}
+        </span>
+      </h3>
+
+      <div class="timer ${suddenDeath ? 'sd' : ''}" id="timer_${esc(m.matchId)}">
+        ${suddenDeath ? 'SUDDEN DEATH' : time(m.remainingSeconds)}
+      </div>
+
+      <div class="match-score">
+        <div>
+          <div class="fighter">${esc(m.fighter1)}</div>
+          <div class="score">${m.fighter1Points}</div>
+          <div class="scoremeta">
+            Clean: ${m.fighter1Clean} · Dirty: ${m.fighter1Dirty}
+          </div>
+        </div>
+
+        <div class="vs">VS</div>
+
+        <div>
+          <div class="fighter">${esc(m.fighter2)}</div>
+          <div class="score">${m.fighter2Points}</div>
+          <div class="scoremeta">
+            Clean: ${m.fighter2Clean} · Dirty: ${m.fighter2Dirty}
+          </div>
+        </div>
+      </div>
+
+      ${
+        done
+          ? `
+            <p>
+              <strong>Winner:</strong> ${esc(m.winner)}
+              ${truth(m.suddenDeathRequired) ? ' — sudden death' : ''}
+            </p>
+          `
+          : `
+            <div class="button-row">
+              <button class="small start" data-id="${esc(m.matchId)}">
+                ${m.status === 'not_started' ? 'Start 2-minute match' : 'Resume'}
+              </button>
+
+              <button class="small outline pause" data-id="${esc(m.matchId)}">
+                Pause
+              </button>
+
+              <button class="small outline end" data-id="${esc(m.matchId)}">
+                End / check result
+              </button>
+            </div>
+
+            <div class="exchange-grid">
+              <div>
+                <label>Scoring fighter</label>
+                <select id="fighter_${esc(m.matchId)}">
+                  <option value="${esc(m.fighter1)}">${esc(m.fighter1)}</option>
+                  <option value="${esc(m.fighter2)}">${esc(m.fighter2)}</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Exchange</label>
+                <div class="choice-row">
+                  <button
+                    class="small choice quality ${quality === 'clean' ? 'selected' : ''}"
+                    data-id="${esc(m.matchId)}"
+                    data-q="clean"
+                  >
+                    Clean
+                  </button>
+
+                  <button
+                    class="small choice quality ${quality === 'dirty' ? 'selected' : ''}"
+                    data-id="${esc(m.matchId)}"
+                    data-q="dirty"
+                  >
+                    Dirty
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label>Points</label>
+                <div class="choice-row">
+                  <button
+                    class="small choice point ${points === 1 ? 'selected' : ''}"
+                    data-id="${esc(m.matchId)}"
+                    data-p="1"
+                    ${quality === 'dirty' ? 'disabled' : ''}
+                  >
+                    1 point
+                  </button>
+
+                  <button
+                    class="small choice point ${points === 4 ? 'selected' : ''}"
+                    data-id="${esc(m.matchId)}"
+                    data-p="4"
+                    ${quality === 'dirty' ? 'disabled' : ''}
+                  >
+                    4 points
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <button class="record" data-id="${esc(m.matchId)}">
+                  Record exchange
+                </button>
+              </div>
+            </div>
+          `
+      }
+
+      <div class="exchange-log">
+        ${
+          ex(m.matchId).length
+            ? ex(m.matchId).map(function (x) {
+                return `
+                  <div class="exchange">
+                    <span>
+                      ${esc(x.fighter)} —
+                      <strong>${esc(x.quality)}</strong> —
+                      ${esc(x.points)} pt${Number(x.points) === 1 ? '' : 's'}
+                      ${truth(x.isSuddenDeath) ? ' · SUDDEN DEATH' : ''}
+                    </span>
+
+                    <span>
+                      ${
+                        truth(x.isSuddenDeath)
+                          ? 'SD'
+                          : time(x.remainingSeconds) + ' remaining'
+                      }
+                    </span>
+                  </div>
+                `;
+              }).join('')
+            : '<p class="muted">No scoring exchanges recorded.</p>'
+        }
+      </div>
+    </article>
+  `;
+}
+
+function bind(m) {
+  const cardElement = $('card_' + m.matchId);
+
+  if (!cardElement) {
+    return;
+  }
+
+  const startButton = cardElement.querySelector('.start');
+  const pauseButton = cardElement.querySelector('.pause');
+  const endButton = cardElement.querySelector('.end');
+  const recordButton = cardElement.querySelector('.record');
+
+  if (startButton) {
+    startButton.addEventListener('click', function () {
+      start(m.matchId);
+    });
+  }
+
+  if (pauseButton) {
+    pauseButton.addEventListener('click', function () {
+      pause(m.matchId);
+    });
+  }
+
+  if (endButton) {
+    endButton.addEventListener('click', function () {
+      end(m.matchId);
+    });
+  }
+
+  if (recordButton) {
+    recordButton.addEventListener('click', function () {
+      record(m.matchId);
+    });
+  }
+
+  cardElement.querySelectorAll('.quality').forEach(function (button) {
+    button.onclick = function () {
+      state.quality[m.matchId] = button.dataset.q;
+
+      if (button.dataset.q === 'dirty') {
+        state.points[m.matchId] = 1;
+      }
+
+      matchCards();
+    };
+  });
+
+  cardElement.querySelectorAll('.point').forEach(function (button) {
+    button.onclick = function () {
+      state.points[m.matchId] = Number(button.dataset.p);
+      matchCards();
+    };
+  });
+}
+
+async function saveMatch(m) {
+  const result = await api('updateMatch', { match: m }, true);
+  Object.assign(m, result.match);
+}
+
+async function start(mid) {
+  const m = match(mid);
+
+  if (!m || m.status === 'completed' || m.status === 'sudden_death') {
+    return;
+  }
+
+  if (state.timer) {
+    clearInterval(state.timer);
+  }
+
+  if (!m.startedAt) {
+    m.startedAt = now();
+  }
+
+  m.status = 'in_progress';
+
+  try {
+    await saveMatch(m);
+  } catch (error) {
+    msg('Could not start timer: ' + error.message, 'error');
+    return;
+  }
+
+  state.timerId = mid;
+
+  state.timer = setInterval(async function () {
+    const activeMatch = match(mid);
+
+    if (!activeMatch || activeMatch.status !== 'in_progress') {
+      return;
+    }
+
+    activeMatch.remainingSeconds = Math.max(
+      0,
+      Number(activeMatch.remainingSeconds) - 1
+    );
+
+    const timerDisplay = $('timer_' + mid);
+
+    if (timerDisplay) {
+      timerDisplay.textContent = time(activeMatch.remainingSeconds);
+    }
+
+    if (activeMatch.remainingSeconds === 0) {
+      clearInterval(state.timer);
+      state.timer = null;
+      state.timerId = null;
+      await expired(mid);
+    }
+  }, 1000);
+
+  matchCards();
+}
+
+async function pause(mid) {
+  const m = match(mid);
+
+  if (!m) {
+    return;
+  }
+
+  if (state.timerId === mid && state.timer) {
+    clearInterval(state.timer);
+    state.timer = null;
+    state.timerId = null;
+  }
+
+  if (m.status === 'in_progress') {
+    m.status = 'paused';
+
+    try {
+      await saveMatch(m);
+      msg('Timer paused.', 'info');
+    } catch (error) {
+      msg('Could not pause timer: ' + error.message, 'error');
+    }
+  }
+
+  matchCards();
+}
+
+async function expired(mid) {
+  const m = match(mid);
+
+  if (!m) {
+    return;
+  }
+
+  if (Number(m.fighter1Points) === Number(m.fighter2Points)) {
+    m.status = 'sudden_death';
+    m.suddenDeathRequired = true;
+
+    try {
+      await saveMatch(m);
+      msg(
+        'Time expired tied: first scoring exchange wins sudden death.',
+        'info'
+      );
+    } catch (error) {
+      msg(error.message, 'error');
+    }
+  } else {
+    m.status = 'completed';
+    m.winner =
+      Number(m.fighter1Points) > Number(m.fighter2Points)
+        ? m.fighter1
+        : m.fighter2;
+
+    m.endedAt = now();
+
+    try {
+      await saveMatch(m);
+      msg('Time expired. Winner: ' + m.winner, 'success');
+    } catch (error) {
+      msg(error.message, 'error');
+    }
+  }
+
+  renderTournament();
+  afterMatchCompletion();
+}
+
+async function end(mid) {
+  const m = match(mid);
+
+  if (!m) {
+    return;
+  }
+
+  await pause(mid);
+
+  if (Number(m.fighter1Points) === Number(m.fighter2Points)) {
+    m.status = 'sudden_death';
+    m.suddenDeathRequired = true;
+
+    try {
+      await saveMatch(m);
+      msg(
+        'Match tied: record the first sudden-death score.',
+        'info'
+      );
+    } catch (error) {
+      msg(error.message, 'error');
+    }
+  } else {
+    m.status = 'completed';
+    m.winner =
+      Number(m.fighter1Points) > Number(m.fighter2Points)
+        ? m.fighter1
+        : m.fighter2;
+
+    m.endedAt = now();
+
+    try {
+      await saveMatch(m);
+      msg('Winner: ' + m.winner, 'success');
+    } catch (error) {
+      msg(error.message, 'error');
+    }
+  }
+
+  renderTournament();
+  afterMatchCompletion();
+}
+
+async function record(mid) {
+  const m = match(mid);
+
+  if (!m || m.status === 'completed') {
+    return;
+  }
+
+  const fighterSelect = $('fighter_' + mid);
+
+  if (!fighterSelect) {
+    return msg(
+      'Could not find scoring-fighter selector.',
+      'error'
+    );
+  }
+
+  const fighter = fighterSelect.value;
+  const quality = state.quality[mid] || 'clean';
+  const points =
+    quality === 'dirty'
+      ? 1
+      : (state.points[mid] || 1);
+
+  const suddenDeath = m.status === 'sudden_death';
+
+  const exchange = {
+    tournamentId: m.tournamentId,
+    matchId: mid,
+    exchangeId: uid('exchange'),
+    fighter: fighter,
+    quality: quality,
+    points: points,
+    remainingSeconds: m.remainingSeconds,
+    isSuddenDeath: suddenDeath,
+    timestamp: now()
+  };
+
+  try {
+    const result = await api(
+      'recordExchange',
+      { exchange: exchange },
+      true
+    );
+
+    Object.assign(m, result.match);
+    state.current.exchanges.push(exchange);
+
+    if (suddenDeath) {
+      if (state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+        state.timerId = null;
+      }
+
+      msg('Sudden-death winner: ' + fighter, 'success');
+      renderTournament();
+      afterMatchCompletion();
+      return;
+    }
+
+    const lead = Math.abs(
+      Number(m.fighter1Points) -
+      Number(m.fighter2Points)
+    );
+
+    if (lead >= 9) {
+      if (state.timerId === mid && state.timer) {
+        clearInterval(state.timer);
+        state.timer = null;
+        state.timerId = null;
+      }
+
+      m.status = 'completed';
+      m.winner =
+        Number(m.fighter1Points) > Number(m.fighter2Points)
+          ? m.fighter1
+          : m.fighter2;
+
+      m.endedAt = now();
+
+      await saveMatch(m);
+
+      msg(
+        'Match ended by 9-point lead: ' +
+          m.winner +
+          ' wins ' +
+          m.fighter1Points +
+          '–' +
+          m.fighter2Points +
+          '.',
+        'success'
+      );
+
+      renderTournament();
+      afterMatchCompletion();
+      return;
+    }
+
+    msg(
+      'Exchange recorded. Timer continues unless the referee pauses it.',
+      'success'
+    );
+
+    renderTournament();
+  } catch (error) {
+    msg(
+      'Could not record exchange: ' + error.message,
+      'error'
+    );
+  }
+}
+
+function finalButtons() {
+  const t = state.current.tournament;
+  const allMatches = matches();
+  const pools = allMatches.filter(function (m) {
+    return m.stage === 'Pool';
+  });
+
+  const semis = allMatches.filter(function (m) {
+    return m.stage === 'Semi-final';
+  });
+
+  const finals = allMatches.filter(function (m) {
+    return m.stage === 'Final' || m.stage === 'Third Place';
+  });
+
+  $('makeSemis').hidden = !(
+    t.format === 'two_pools' &&
+    truth(t.finalsEnabled) &&
+    pools.length &&
+    pools.every(function (m) {
+      return m.status === 'completed';
+    }) &&
+    !semis.length
+  );
+
+  $('makeFinals').hidden = !(
+    semis.length === 2 &&
+    semis.every(function (m) {
+      return m.status === 'completed';
+    }) &&
+    !finals.length
+  );
+}
+
+async function createSemis() {
+  const t = state.current.tournament;
+  const groups = {};
+
+  matches()
+    .filter(function (m) {
+      return m.stage === 'Pool';
+    })
+    .forEach(function (m) {
+      if (!groups[m.pool]) {
+        groups[m.pool] = [];
+      }
+
+      groups[m.pool].push(m);
+    });
+
+  const poolA = stats(groups['Pool A'] || []);
+  const poolB = stats(groups['Pool B'] || []);
+
+  if (poolA.length < 2 || poolB.length < 2) {
+    return msg(
+      'Both pools need at least two fighters.',
+      'error'
+    );
+  }
+
+  const startNumber =
+    Math.max(
+      ...matches().map(function (m) {
+        return Number(m.matchNumber) || 0;
+      })
+    ) + 1;
+
+  const newMatches = [
+    newMatch(
+      t.tournamentId,
+      poolA[0].name,
+      poolB[1].name,
+      'Semi-final',
+      'Finals',
+      startNumber
+    ),
+    newMatch(
+      t.tournamentId,
+      poolB[0].name,
+      poolA[1].name,
+      'Semi-final',
+      'Finals',
+      startNumber + 1
+    )
+  ];
+
+  try {
+    await api(
+      'appendMatches',
+      {
+        tournamentId: t.tournamentId,
+        matches: newMatches
+      },
+      true
+    );
+
+    state.current.matches.push(...newMatches);
+    renderTournament();
+    msg('Semi-finals created.', 'success');
+  } catch (error) {
+    msg(
+      'Could not create semi-finals: ' + error.message,
+      'error'
+    );
+  }
+}
+
+async function createFinals() {
+  const t = state.current.tournament;
+
+  const semis = matches()
+    .filter(function (m) {
+      return m.stage === 'Semi-final';
+    })
+    .sort(function (a, b) {
+      return Number(a.matchNumber) - Number(b.matchNumber);
+    });
+
+  if (
+    semis.length !== 2 ||
+    !semis.every(function (m) {
+      return m.status === 'completed';
+    })
+  ) {
+    return msg('Complete both semi-finals first.', 'error');
+  }
+
+  const winner1 = semis[0].winner;
+  const winner2 = semis[1].winner;
+
+  const loser1 =
+    winner1 === semis[0].fighter1
+      ? semis[0].fighter2
+      : semis[0].fighter1;
+
+  const loser2 =
+    winner2 === semis[1].fighter1
+      ? semis[1].fighter2
+      : semis[1].fighter1;
+
+  const startNumber =
+    Math.max(
+      ...matches().map(function (m) {
+        return Number(m.matchNumber) || 0;
+      })
+    ) + 1;
+
+  const newMatches = [
+    newMatch(
+      t.tournamentId,
+      loser1,
+      loser2,
+      'Third Place',
+      'Finals',
+      startNumber
+    ),
+    newMatch(
+      t.tournamentId,
+      winner1,
+      winner2,
+      'Final',
+      'Finals',
+      startNumber + 1
+    )
+  ];
+
+  try {
+    await api(
+      'appendMatches',
+      {
+        tournamentId: t.tournamentId,
+        matches: newMatches
+      },
+      true
+    );
+
+    state.current.matches.push(...newMatches);
+    renderTournament();
+    msg('Third-place bout and final created.', 'success');
+  } catch (error) {
+    msg(
+      'Could not create finals: ' + error.message,
+      'error'
+    );
+  }
+}
+
+function afterMatchCompletion() {
+  setTimeout(finalButtons, 0);
+}
+
+function overall() {
+  const t = state.current.tournament;
+
+  if (t.format === 'one_pool') {
+    const rows = stats(
+      matches().filter(function (m) {
+        return m.stage === 'Pool';
+      })
+    );
+
+    $('podium').innerHTML =
+      rows.length >= 3
+        ? `
+          <div class="podplace">
+            <div class="block second">2</div>
+            <strong>${esc(rows[1].name)}</strong>
+          </div>
+
+          <div class="podplace">
+            <div class="block first">1</div>
+            <strong>${esc(rows[0].name)}</strong>
+          </div>
+
+          <div class="podplace">
+            <div class="block third">3</div>
+            <strong>${esc(rows[2].name)}</strong>
+          </div>
+        `
+        : '';
+
+    $('overall').innerHTML = statTable(rows);
+    return;
+  }
+
+  const final = matches().find(function (m) {
+    return m.stage === 'Final' && m.status === 'completed';
+  });
+
+  const third = matches().find(function (m) {
+    return m.stage === 'Third Place' && m.status === 'completed';
+  });
+
+  if (final) {
+    const first = final.winner;
+
+    const second =
+      final.winner === final.fighter1
+        ? final.fighter2
+        : final.fighter1;
+
+    const thirdName = third ? third.winner : '';
+
+    const placements = [
+      first,
+      second,
+      ...(thirdName ? [thirdName] : [])
+    ];
+
+    $('podium').innerHTML =
+      placements.length >= 3
+        ? `
+          <div class="podplace">
+            <div class="block second">2</div>
+            <strong>${esc(placements[1])}</strong>
+          </div>
+
+          <div class="podplace">
+            <div class="block first">1</div>
+            <strong>${esc(placements[0])}</strong>
+          </div>
+
+          <div class="podplace">
+            <div class="block third">3</div>
+            <strong>${esc(placements[2])}</strong>
+          </div>
+        `
+        : '';
+
+    $('overall').innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Place</th>
+            <th>Fighter</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${placements.map(function (name, index) {
+            return `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${esc(name)}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  } else {
+    $('podium').innerHTML = '';
+
+    $('overall').innerHTML =
+      '<p class="muted">' +
+      'Complete the pools, then semi-finals, third-place bout and final ' +
+      'to display final places.' +
+      '</p>';
+  }
+}
+
 init();
 </script>
 </body>
