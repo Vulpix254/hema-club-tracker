@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEMA Club Tracker</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #eee;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #e94560;
+            font-size: 2em;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #e94560;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .nav-tab:hover, .nav-tab.active {
+            background: #e94560;
+            transform: translateY(-2px);
+        }
+        
+        .section {
+            display: none;
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #e94560;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(233,69,96,0.3);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 16px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #e94560;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #ff6b6b;
+            transform: translateY(-2px);
+        }
+        
+        button.secondary {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #e94560;
+        }
+        
+        button.secondary:hover {
+            background: rgba(233,69,96,0.2);
+        }
+        
+        .card {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #e94560;
+        }
+        
+        .card h3 {
+            color: #e94560;
+            margin-bottom: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        th {
+            background: rgba(233,69,96,0.2);
+            color: #e94560;
+        }
+        
+        .win { color: #4ade80; }
+        .loss { color: #f87171; }
+        
+        .match-card {
+            background: rgba(0,0,0,0.4);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #e94560;
+        }
+        
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .match-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-box label {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-box input {
+            text-align: center;
+        }
+        
+        .podium {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 20px;
+            margin: 30px 0;
+            height: 200px;
+        }
+        
+        .podium-place {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        
+        .podium-block {
+            width: 100px;
+            background: linear-gradient(180deg, #e94560 0%, #c0354a 100%);
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #fff;
+        }
+        
+        .podium-block.first { height: 150px; background: linear-gradient(180deg, #ffd700 0%, #ffaa00 100%); }
+        .podium-block.second { height: 100px; background: linear-gradient(180deg, #c0c0c0 0%, #a0a0a0 100%); }
+        .podium-block.third { height: 70px; }
+        
+        .podium-name {
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+            max-width: 120px;
+        }
+        
+        .hidden { display: none; }
+        
+        .password-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .password-box {
+            background: #1a1a2e;
+            padding: 40px;
+            border-radius: 12px;
+            border: 3px solid #e94560;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .password-box h2 {
+            color: #e94560;
+            margin-bottom: 20px;
+        }
+        
+        .error {
+            color: #f87171;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .success {
+            color: #4ade80;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 600px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .match-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+            
+            th, td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="password-overlay" id="passwordOverlay">
+        <div class="password-box">
+            <h2>🏰 HEMA Club Tracker</h2>
+            <p style="margin-bottom: 20px;">Enter access code to continue</p>
+            <input type="password" id="accessCode" placeholder="Enter code" style="margin-bottom: 15px;">
+            <button onclick="validateAccess()">Enter</button>
+            <p class="error" id="loginError" style="display: none;">Incorrect code!</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>🏰 HEMA Club Tracker</h1>
+        
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="showSection('suddenDeath')">⚔️ Sudden Death</div>
+            <div class="nav-tab" onclick="showSection('leaderboard')">📊 Leaderboard</div>
+            <div class="nav-tab" onclick="showSection('tournament')">🏆 Tournament</div>
+        </div>
+
+        <!-- Sudden Death Section -->
+        <div class="section active" id="suddenDeath">
+            <div class="card">
+                <h3>Log Your Bout</h3>
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <select id="sdName"></select>
+                </div>
+                <div class="form-group">
+                    <label>Month</label>
+                    <select id="sdMonth">
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Result</label>
+                    <select id="sdResult">
+                        <option value="win">Win 🎉</option>
+                        <option value="loss">Loss 😔</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Deep Cut Location (for improvement tracking)</label>
+                    <input type="text" id="sdLocation" placeholder="e.g., Inside forearm, Outside shoulder, etc.">
+                </div>
+                <button onclick="addSuddenDeath()">Log Bout</button>
+                <p class="success" id="sdSuccess" style="display: none;">Bout logged successfully!</p>
+            </div>
+            
+            <div class="card" style="margin-top: 20px;">
+                <h3>Your History</h3>
+                <div id="userHistory"></div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Section -->
+        <div class="section" id="leaderboard">
+            <div class="card">
+                <h3>🏆 Sudden Death Leaderboard</h3>
+                <p style="margin-bottom: 15px; color: #aaa;">Average wins per member (all-time)</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Wins</th>
+                            <th>Total Bouts</th>
+                            <th>Average</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody"></tbody>
+                </table>
+            </div>
+            
+            <div class="card" style="margin-top: 20px;">
+                <h3>📍 Common Target Areas</h3>
+                <div id="targetAreas"></div>
+            </div>
+        </div>
+
+        <!-- Tournament Section -->
+        <div class="section" id="tournament">
+            <div class="card">
+                <h3>🎯 Setup Tournament</h3>
+                <div class="form-group">
+                    <label>Select Participants</label>
+                    <div id="participantCheckboxes" style="max-height: 300px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;"></div>
+                </div>
+                <div class="form-group">
+                    <label>Number of Pools</label>
+                    <select id="numPools" onchange="togglePoolSelection()">
+                        <option value="1">1 Pool</option>
+                        <option value="2">2 Pools</option>
+                    </select>
+                </div>
+                <div class="form-group" id="poolASelection" style="display: none;">
+                    <label>Pool A Participants</label>
+                    <div id="poolACheckboxes" style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;"></div>
+                </div>
+                <div class="form-group" id="poolBSelection" style="display: none;">
+                    <label>Pool B Participants</label>
+                    <div id="poolBCheckboxes" style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;"></div>
+                </div>
+                <button onclick="generateMatches()">Generate Matches</button>
+            </div>
+
+            <div id="matchesContainer" class="hidden">
+                <div class="card">
+                    <h3 id="currentPoolTitle">🗡️ Tournament Matches</h3>
+                    <div id="matchesList"></div>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h3>🏆 Final Results</h3>
+                    <div class="podium" id="podiumDisplay"></div>
+                    <div id="finalStandings"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Club members
+        const members = [
+            "Helen Bearse", "Bogdan Calin", "Matthew Delaney", "Jordan Dunne", "Tamas Gal",
+            "Jack K", "William Marshall", "Glenn Moran", "Oisin O'Connor", "Ilia Postolov",
+            "Jose Serrano", "Ralph Delos Reyes", "Sebastian Espinoza", "Boris Galkin",
+            "Ali Sher Halim", "Dmitrii Sazanov", "Gavie (Man Ho Cheng)", "Margherita Frezza",
+            "Maciej Czajowski", "Conor McKeon", "JUDE WOODFULL"
+        ];
+
+        // Access code (simple validation)
+        const ACCESS_CODE = "HEMA2024";
+
+        // Data storage (using localStorage for persistence)
+        let suddenDeathData = JSON.parse(localStorage.getItem('suddenDeathData')) || [];
+        let tournamentData = JSON.parse(localStorage.getItem('tournamentData')) || {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            populateMemberSelects();
+            populateParticipantCheckboxes();
+            updateLeaderboard();
+            updateUserHistory();
+            updateTargetAreas();
+            
+            // Set current month
+            const months = ["January", "February", "March", "April", "May", "June", 
+                           "July", "August", "September", "October", "November", "December"];
+            document.getElementById('sdMonth').value = months[new Date().getMonth()];
+        });
+
+        function validateAccess() {
+            const code = document.getElementById('accessCode').value;
+            if (code === ACCESS_CODE) {
+                document.getElementById('passwordOverlay').style.display = 'none';
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (sectionId === 'leaderboard') {
+                updateLeaderboard();
+                updateTargetAreas();
+            }
+        }
+
+        function populateMemberSelects() {
+            const selects = ['sdName'];
+            selects.forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = '<option value="">Select your name</option>';
+                members.forEach(member => {
+                    select.innerHTML += `<option value="${member}">${member}</option>`;
+                });
+            });
+        }
+
+        function populateParticipantCheckboxes() {
+            const container = document.getElementById('participantCheckboxes');
+            container.innerHTML = '';
+            members.forEach((member, index) => {
+                container.innerHTML += `
+                    <div style="margin-bottom: 8px;">
+                        <input type="checkbox" id="participant_${index}" value="${member}" style="width: auto; display: inline-block; margin-right: 10px;">
+                        <label for="participant_${index}" style="display: inline; color: #fff; font-weight: normal;">${member}</label>
+                    </div>
+                `;
+            });
+        }
+
+        function togglePoolSelection() {
+            const numPools = document.getElementById('numPools').value;
+            document.getElementById('poolASelection').style.display = numPools === '2' ? 'block' : 'none';
+            document.getElementById('poolBSelection').style.display = numPools === '2' ? 'block' : 'none';
+            
+            if (numPools === '2') {
+                populatePoolCheckboxes('poolA');
+                populatePoolCheckboxes('poolB');
+            }
+        }
+
+        function populatePoolCheckboxes(poolPrefix) {
+            const container = document.getElementById(`${poolPrefix}Checkboxes`);
+            container.innerHTML = '';
+            members.forEach((member, index) => {
+                container.innerHTML += `
+                    <div style="margin-bottom: 8px;">
+                        <input type="checkbox" id="${poolPrefix}_participant_${index}" value="${member}" style="width: auto; display: inline-block; margin-right: 10px;">
+                        <label for="${poolPrefix}_participant_${index}" style="display: inline; color: #fff; font-weight: normal;">${member}</label>
+                    </div>
+                `;
+            });
+        }
+
+        function addSuddenDeath() {
+            const name = document.getElementById('sdName').value;
+            const month = document.getElementById('sdMonth').value;
+            const result = document.getElementById('sdResult').value;
+            const location = document.getElementById('sdLocation').value;
+
+            if (!name) {
+                alert('Please select your name');
+                return;
+            }
+
+            const entry = {
+                id: Date.now(),
+                name,
+                month,
+                result,
+                location,
+                timestamp: new Date().toISOString()
+            };
+
+            suddenDeathData.push(entry);
+            localStorage.setItem('suddenDeathData', JSON.stringify(suddenDeathData));
+
+            document.getElementById('sdSuccess').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('sdSuccess').style.display = 'none';
+            }, 3000);
+
+            document.getElementById('sdLocation').value = '';
+            updateUserHistory();
+        }
+
+        function updateUserHistory() {
+            const container = document.getElementById('userHistory');
+            const currentName = document.getElementById('sdName').value;
+            
+            if (!currentName) {
+                container.innerHTML = '<p style="color: #aaa;">Select your name to see your history</p>';
+                return;
+            }
+
+            const userEntries = suddenDeathData.filter(e => e.name === currentName);
+            
+            if (userEntries.length === 0) {
+                container.innerHTML = '<p style="color: #aaa;">No bouts logged yet</p>';
+                return;
+            }
+
+            container.innerHTML = '<table><thead><tr><th>Month</th><th>Result</th><th>Location</th></tr></thead><tbody>';
+            userEntries.reverse().forEach(entry => {
+                const resultClass = entry.result === 'win' ? 'win' : 'loss';
+                const resultIcon = entry.result === 'win' ? '🎉' : '😔';
+                container.innerHTML += `
+                    <tr>
+                        <td>${entry.month}</td>
+                        <td class="${resultClass}">${resultIcon} ${entry.result.toUpperCase()}</td>
+                        <td>${entry.location || '-'}</td>
+                    </tr>
+                `;
+            });
+            container.innerHTML += '</tbody></table>';
+        }
+
+        function updateLeaderboard() {
+            const stats = {};
+            members.forEach(member => {
+                stats[member] = { wins: 0, total: 0 };
+            });
+
+            suddenDeathData.forEach(entry => {
+                if (stats[entry.name]) {
+                    stats[entry.name].total++;
+                    if (entry.result === 'win') {
+                        stats[entry.name].wins++;
+                    }
+                }
+            });
+
+            const sorted = Object.entries(stats)
+                .filter(([_, data]) => data.total > 0)
+                .sort((a, b) => {
+                    const avgA = a[1].wins / a[1].total;
+                    const avgB = b[1].wins / b[1].total;
+                    return avgB - avgA || b[1].wins - a[1].wins;
+                });
+
+            const tbody = document.getElementById('leaderboardBody');
+            tbody.innerHTML = '';
+            
+            sorted.forEach(([name, data], index) => {
+                const avg = (data.wins / data.total * 100).toFixed(1);
+                const rank = index + 1;
+                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${medal}</td>
+                        <td>${name}</td>
+                        <td class="win">${data.wins}</td>
+                        <td>${data.total}</td>
+                        <td><strong>${avg}%</strong></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateTargetAreas() {
+            const areas = {};
+            suddenDeathData.forEach(entry => {
+                if (entry.location) {
+                    const loc = entry.location.toLowerCase().trim();
+                    areas[loc] = (areas[loc] || 0) + 1;
+                }
+            });
+
+            const sorted = Object.entries(areas).sort((a, b) => b[1] - a[1]);
+            const container = document.getElementById('targetAreas');
+            
+            if (sorted.length === 0) {
+                container.innerHTML = '<p style="color: #aaa;">No target areas logged yet</p>';
+                return;
+            }
+
+            container.innerHTML = '<table><thead><tr><th>Target Area</th><th>Frequency</th></tr></thead><tbody>';
+            sorted.forEach(([area, count]) => {
+                container.innerHTML += `<tr><td>${area}</td><td>${count}</td></tr>`;
+            });
+            container.innerHTML += '</tbody></table>';
+        }
+
+        function generateMatches() {
+            const numPools = document.getElementById('numPools').value;
+            let participants = [];
+
+            if (numPools === '1') {
+                document.querySelectorAll('#participantCheckboxes input:checked').forEach(cb => {
+                    participants.push(cb.value);
+                });
+            } else {
+                document.querySelectorAll('#poolACheckboxes input:checked').forEach(cb => {
+                    participants.push({ name: cb.value, pool: 'A' });
+                });
+                document.querySelectorAll('#poolBCheckboxes input:checked').forEach(cb => {
+                    participants.push({ name: cb.value, pool: 'B' });
+                });
+            }
+
+            if (participants.length < 2) {
+                alert('Please select at least 2 participants');
+                return;
+            }
+
+            // Shuffle and create matches
+            participants = participants.sort(() => Math.random() - 0.5);
+            
+            const matches = [];
+            const matchData = {};
+
+            if (numPools === '1') {
+                // Round-robin style for single pool
+                for (let i = 0; i < participants.length - 1; i++) {
+                    for (let j = i + 1; j < participants.length; j++) {
+                        const matchId = `match_${Date.now()}_${i}_${j}`;
+                        matches.push({
+                            id: matchId,
+                            fighter1: participants[i],
+                            fighter2: participants[j],
+                            pool: 'Finals'
+                        });
+                        matchData[matchId] = {
+                            fighter1_clean: 0,
+                            fighter1_dirty: 0,
+                            fighter2_clean: 0,
+                            fighter2_dirty: 0,
+                            winner: null,
+                            fighter1_points: 0,
+                            fighter2_points: 0
+                        };
+                    }
+                }
+            } else {
+                // Separate pools
+                const poolA = participants.filter(p => p.pool === 'A').map(p => p.name);
+                const poolB = participants.filter(p => p.pool === 'B').map(p => p.name);
+
+                [poolA, poolB].forEach((pool, poolIndex) => {
+                    const poolName = poolIndex === 0 ? 'A' : 'B';
+                    for (let i = 0; i < pool.length - 1; i++) {
+                        for (let j = i + 1; j < pool.length; j++) {
+                            const matchId = `match_${poolName}_${Date.now()}_${i}_${j}`;
+                            matches.push({
+                                id: matchId,
+                                fighter1: pool[i],
+                                fighter2: pool[j],
+                                pool: `Pool ${poolName}`
+                            });
+                            matchData[matchId] = {
+                                fighter1_clean: 0,
+                                fighter1_dirty: 0,
+                                fighter2_clean: 0,
+                                fighter2_dirty: 0,
+                                winner: null,
+                                fighter1_points: 0,
+                                fighter2_points: 0
+                            };
+                        }
+                    }
+                });
+            }
+
+            tournamentData.matches = matches;
+            tournamentData.matchData = matchData;
+            tournamentData.completed = {};
+
+            displayMatches(matches);
+            document.getElementById('matchesContainer').classList.remove('hidden');
+        }
+
+        function displayMatches(matches) {
+            const container = document.getElementById('matchesList');
+            container.innerHTML = '';
+
+            matches.forEach((match, index) => {
+                const matchId = match.id;
+                const isCompleted = tournamentData.completed[matchId];
+                
+                container.innerHTML += `
+                    <div class="match-card" id="match_${matchId}">
+                        <div class="match-header">
+                            <span>Match ${index + 1} - ${match.pool}</span>
+                            ${isCompleted ? '<span class="success">✓ Completed</span>' : ''}
+                        </div>
+                        <div style="text-align: center; margin-bottom: 15px; font-size: 1.3em; font-weight: bold;">
+                            ${match.fighter1} <span style="color: #e94560;">VS</span> ${match.fighter2}
+                        </div>
+                        <div class="match-stats">
+                            <div class="stat-box">
+                                <label>${match.fighter1}</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px;">
+                                    <div>
+                                        <label style="font-size: 0.8em;">Clean</label>
+                                        <input type="number" id="${matchId}_f1_clean" value="${tournamentData.matchData[matchId].fighter1_clean}" min="0">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.8em;">Dirty</label>
+                                        <input type="number" id="${matchId}_f1_dirty" value="${tournamentData.matchData[matchId].fighter1_dirty}" min="0">
+                                    </div>
+                                </div>
+                                <label style="font-size: 0.9em;">Points: <span id="${matchId}_f1_points">${tournamentData.matchData[matchId].fighter1_points}</span></label>
+                            </div>
+                            <div class="stat-box">
+                                <label>${match.fighter2}</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px;">
+                                    <div>
+                                        <label style="font-size: 0.8em;">Clean</label>
+                                        <input type="number" id="${matchId}_f2_clean" value="${tournamentData.matchData[matchId].fighter2_clean}" min="0">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.8em;">Dirty</label>
+                                        <input type="number" id="${matchId}_f2_dirty" value="${tournamentData.matchData[matchId].fighter2_dirty}" min="0">
+                                    </div>
+                                </div>
+                                <label style="font-size: 0.9em;">Points: <span id="${matchId}_f2_points">${tournamentData.matchData[matchId].fighter2_points}</span></label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Winner</label>
+                            <select id="${matchId}_winner" onchange="updatePoints('${matchId}')">
+                                <option value="">Select winner</option>
+                                <option value="1" ${tournamentData.matchData[matchId].winner === '1' ? 'selected' : ''}>${match.fighter1}</option>
+                                <option value="2" ${tournamentData.matchData[matchId].winner === '2' ? 'selected' : ''}>${match.fighter2}</option>
+                            </select>
+                        </div>
+                        <button onclick="saveMatch('${matchId}')" ${isCompleted ? 'class="secondary"' : ''}>
+                            ${isCompleted ? 'Update Match' : 'Save Match'}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function updatePoints(matchId) {
+            const winner = document.getElementById(`${matchId}_winner`).value;
+            const f1Clean = parseInt(document.getElementById(`${matchId}_f1_clean`).value) || 0;
+            const f1Dirty = parseInt(document.getElementById(`${matchId}_f1_dirty`).value) || 0;
+            const f2Clean = parseInt(document.getElementById(`${matchId}_f2_clean`).value) || 0;
+            const f2Dirty = parseInt(document.getElementById(`${matchId}_f2_dirty`).value) || 0;
+
+            // Points: Clean = 1, Dirty = 0.5
+            const f1Points = f1Clean * 1 + f1Dirty * 0.5;
+            const f2Points = f2Clean * 1 + f2Dirty * 0.5;
+
+            document.getElementById(`${matchId}_f1_points`).textContent = f1Points.toFixed(1);
+            document.getElementById(`${matchId}_f2_points`).textContent = f2Points.toFixed(1);
+
+            tournamentData.matchData[matchId].fighter1_points = f1Points;
+            tournamentData.matchData[matchId].fighter2_points = f2Points;
+            tournamentData.matchData[matchId].winner = winner;
+        }
+
+        function saveMatch(matchId) {
+            updatePoints(matchId);
+            
+            const winner = document.getElementById(`${matchId}_winner`).value;
+            if (!winner) {
+                alert('Please select a winner');
+                return;
+            }
+
+            const f1Clean = parseInt(document.getElementById(`${matchId}_f1_clean`).value) || 0;
+            const f1Dirty = parseInt(document.getElementById(`${matchId}_f1_dirty`).value) || 0;
+            const f2Clean = parseInt(document.getElementById(`${matchId}_f2_clean`).value) || 0;
+            const f2Dirty = parseInt(document.getElementById(`${matchId}_f2_dirty`).value) || 0;
+
+            tournamentData.matchData[matchId] = {
+                fighter1_clean: f1Clean,
+                fighter1_dirty: f1Dirty,
+                fighter2_clean: f2Clean,
+                fighter2_dirty: f2Dirty,
+                winner: winner,
+                fighter1_points: tournamentData.matchData[matchId].fighter1_points,
+                fighter2_points: tournamentData.matchData[matchId].fighter2_points
+            };
+
+            tournamentData.completed[matchId] = true;
+            localStorage.setItem('tournamentData', JSON.stringify(tournamentData));
+
+            displayMatches(tournamentData.matches);
+            calculateFinalStandings();
+        }
+
+        function calculateFinalStandings() {
+            const fighterStats = {};
+
+            tournamentData.matches.forEach(match => {
+                if (!tournamentData.completed[match.id]) return;
+
+                const data = tournamentData.matchData[match.id];
+                const f1 = match.fighter1;
+                const f2 = match.fighter2;
+
+                if (!fighterStats[f1]) {
+                    fighterStats[f1] = { wins: 0, losses: 0, points: 0, clean: 0, dirty: 0 };
+                }
+                if (!fighterStats[f2]) {
+                    fighterStats[f2] = { wins: 0, losses: 0, points: 0, clean: 0, dirty: 0 };
+                }
+
+                fighterStats[f1].points += data.fighter1_points;
+                fighterStats[f1].clean += data.fighter1_clean;
+                fighterStats[f1].dirty += data.fighter1_dirty;
+
+                fighterStats[f2].points += data.fighter2_points;
+                fighterStats[f2].clean += data.fighter2_clean;
+                fighterStats[f2].dirty += data.fighter2_dirty;
+
+                if (data.winner === '1') {
+                    fighterStats[f1].wins++;
+                    fighterStats[f2].losses++;
+                } else if (data.winner === '2') {
+                    fighterStats[f2].wins++;
+                    fighterStats[f1].losses++;
+                }
+            });
+
+            const sorted = Object.entries(fighterStats).sort((a, b) => {
+                if (b[1].wins !== a[1].wins) return b[1].wins - a[1].wins;
+                if (b[1].points !== a[1].points) return b[1].points - a[1].points;
+                return b[1].clean - a[1].clean;
+            });
+
+            // Display podium
+            const podium = document.getElementById('podiumDisplay');
+            podium.innerHTML = '';
+            
+            if (sorted.length >= 3) {
+                podium.innerHTML = `
+                    <div class="podium-place">
+                        <div class="podium-block second">2</div>
+                        <div class="podium-name">${sorted[1][0]}</div>
+                    </div>
+                    <div class="podium-place">
+                        <div class="podium-block first">1</div>
+                        <div class="podium-name">${sorted[0][0]}</div>
+                    </div>
+                    <div class="podium-place">
+                        <div class="podium-block third">3</div>
+                        <div class="podium-name">${sorted[2][0]}</div>
+                    </div>
+                `;
+            } else if (sorted.length === 2) {
+                podium.innerHTML = `
+                    <div class="podium-place">
+                        <div class="podium-block first">1</div>
+                        <div class="podium-name">${sorted[0][0]}</div>
+                    </div>
+                    <div class="podium-place">
+                        <div class="podium-block second">2</div>
+                        <div class="podium-name">${sorted[1][0]}</div>
+                    </div>
+                `;
+            } else if (sorted.length === 1) {
+                podium.innerHTML = `
+                    <div class="podium-place">
+                        <div class="podium-block first">1</div>
+                        <div class="podium-name">${sorted[0][0]}</div>
+                    </div>
+                `;
+            }
+
+            // Display full standings
+            const standings = document.getElementById('finalStandings');
+            standings.innerHTML = '<table><thead><tr><th>Place</th><th>Name</th><th>Wins</th><th>Losses</th><th>Points</th></tr></thead><tbody>';
+            
+            sorted.forEach(([name, stats], index) => {
+                const place = index + 1;
+                const medal = place === 1 ? '🥇' : place === 2 ? '🥈' : place === 3 ? '🥉' : place;
+                standings.innerHTML += `
+                    <tr>
+                        <td>${medal}</td>
+                        <td>${name}</td>
+                        <td class="win">${stats.wins}</td>
+                        <td class="loss">${stats.losses}</td>
+                        <td><strong>${stats.points.toFixed(1)}</strong></td>
+                    </tr>
+                `;
+            });
+            standings.innerHTML += '</tbody></table>';
+        }
+
+        // Update history when name changes
+        document.getElementById('sdName').addEventListener('change', updateUserHistory);
+    </script>
+</body>
+</html>
