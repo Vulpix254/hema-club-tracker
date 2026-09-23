@@ -13,9 +13,9 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #800020 0%, #5a0016 100%);
             min-height: 100vh;
-            color: #eee;
+            color: #fff;
             padding: 20px;
         }
         
@@ -24,11 +24,23 @@
             margin: 0 auto;
         }
         
+        .logo-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo-header img {
+            max-width: 200px;
+            height: auto;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+        
         h1 {
             text-align: center;
             margin-bottom: 30px;
-            color: #e94560;
+            color: #fff;
             font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
         .nav-tabs {
@@ -43,7 +55,7 @@
             min-width: 120px;
             padding: 12px 20px;
             background: rgba(255,255,255,0.1);
-            border: 2px solid #e94560;
+            border: 2px solid #fff;
             color: #fff;
             border-radius: 8px;
             cursor: pointer;
@@ -53,16 +65,18 @@
         }
         
         .nav-tab:hover, .nav-tab.active {
-            background: #e94560;
+            background: #fff;
+            color: #800020;
             transform: translateY(-2px);
         }
         
         .section {
             display: none;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.1);
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 20px;
+            border: 2px solid rgba(255,255,255,0.2);
         }
         
         .section.active {
@@ -77,31 +91,33 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            color: #e94560;
+            color: #fff;
         }
         
         input, select {
             width: 100%;
             padding: 12px;
-            border: 2px solid rgba(233,69,96,0.3);
+            border: 2px solid rgba(255,255,255,0.3);
             border-radius: 8px;
-            background: rgba(0,0,0,0.3);
-            color: #fff;
+            background: rgba(255,255,255,0.9);
+            color: #800020;
             font-size: 16px;
+            font-weight: 500;
         }
         
         input:focus, select:focus {
             outline: none;
-            border-color: #e94560;
+            border-color: #fff;
+            background: #fff;
         }
         
         button {
             width: 100%;
             padding: 14px;
-            background: #e94560;
+            background: #fff;
             border: none;
             border-radius: 8px;
-            color: #fff;
+            color: #800020;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
@@ -110,29 +126,31 @@
         }
         
         button:hover {
-            background: #ff6b6b;
+            background: #f0f0f0;
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,255,255,0.3);
         }
         
         button.secondary {
-            background: rgba(255,255,255,0.1);
-            border: 2px solid #e94560;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid #fff;
+            color: #fff;
         }
         
         button.secondary:hover {
-            background: rgba(233,69,96,0.2);
+            background: rgba(255,255,255,0.3);
         }
         
         .card {
-            background: rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.15);
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 10px;
-            border-left: 4px solid #e94560;
+            border-left: 4px solid #fff;
         }
         
         .card h3 {
-            color: #e94560;
+            color: #fff;
             margin-bottom: 10px;
         }
         
@@ -140,28 +158,33 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
         
         th, td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
         }
         
         th {
-            background: rgba(233,69,96,0.2);
-            color: #e94560;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            font-weight: bold;
         }
         
-        .win { color: #4ade80; }
-        .loss { color: #f87171; }
+        .win { color: #4ade80; font-weight: bold; }
+        .loss { color: #f87171; font-weight: bold; }
         
         .match-card {
-            background: rgba(0,0,0,0.4);
+            background: rgba(255,255,255,0.15);
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 20px;
-            border: 2px solid #e94560;
+            border: 2px solid rgba(255,255,255,0.3);
         }
         
         .match-header {
@@ -171,6 +194,7 @@
             margin-bottom: 15px;
             font-size: 1.2em;
             font-weight: bold;
+            color: #fff;
         }
         
         .match-stats {
@@ -181,15 +205,17 @@
         }
         
         .stat-box {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.1);
             padding: 10px;
             border-radius: 8px;
             text-align: center;
+            border: 2px solid rgba(255,255,255,0.2);
         }
         
         .stat-box label {
             font-size: 0.9em;
             margin-bottom: 5px;
+            color: #fff;
         }
         
         .stat-box input {
@@ -214,25 +240,40 @@
         
         .podium-block {
             width: 100px;
-            background: linear-gradient(180deg, #e94560 0%, #c0354a 100%);
+            background: linear-gradient(180deg, #fff 0%, #e0e0e0 100%);
             border-radius: 8px 8px 0 0;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
             font-size: 1.2em;
-            color: #fff;
+            color: #800020;
+            box-shadow: 0 4px 12px rgba(255,255,255,0.3);
         }
         
-        .podium-block.first { height: 150px; background: linear-gradient(180deg, #ffd700 0%, #ffaa00 100%); }
-        .podium-block.second { height: 100px; background: linear-gradient(180deg, #c0c0c0 0%, #a0a0a0 100%); }
-        .podium-block.third { height: 70px; }
+        .podium-block.first { 
+            height: 150px; 
+            background: linear-gradient(180deg, #ffd700 0%, #ffaa00 100%);
+            color: #800020;
+        }
+        .podium-block.second { 
+            height: 100px; 
+            background: linear-gradient(180deg, #c0c0c0 0%, #a0a0a0 100%);
+            color: #800020;
+        }
+        .podium-block.third { 
+            height: 70px;
+            background: linear-gradient(180deg, #cd7f32 0%, #b87333 100%);
+            color: #fff;
+        }
         
         .podium-name {
             margin-top: 10px;
             text-align: center;
             font-weight: bold;
             max-width: 120px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
         
         .hidden { display: none; }
@@ -243,7 +284,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.95);
+            background: linear-gradient(135deg, #800020 0%, #5a0016 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -251,18 +292,35 @@
         }
         
         .password-box {
-            background: #1a1a2e;
+            background: rgba(255,255,255,0.1);
             padding: 40px;
             border-radius: 12px;
-            border: 3px solid #e94560;
+            border: 3px solid #fff;
             text-align: center;
             max-width: 400px;
             width: 90%;
+            backdrop-filter: blur(10px);
         }
         
         .password-box h2 {
-            color: #e94560;
+            color: #fff;
             margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .password-box p {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        
+        .logo-login {
+            margin-bottom: 20px;
+        }
+        
+        .logo-login img {
+            max-width: 150px;
+            height: auto;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
         }
         
         .error {
@@ -275,6 +333,31 @@
             color: #4ade80;
             margin-top: 10px;
             font-weight: bold;
+        }
+        
+        .logo-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .logo-footer img {
+            max-width: 120px;
+            height: auto;
+            opacity: 0.8;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .logo-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo-section img {
+            max-width: 180px;
+            height: auto;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
         }
         
         @media (max-width: 600px) {
@@ -293,14 +376,21 @@
             th, td {
                 padding: 8px 4px;
             }
+            
+            .logo-header img {
+                max-width: 150px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="password-overlay" id="passwordOverlay">
         <div class="password-box">
+            <div class="logo-login">
+                <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
+            </div>
             <h2>🏰 HEMA Club Tracker</h2>
-            <p style="margin-bottom: 20px;">Enter access code to continue</p>
+            <p>Enter access code to continue</p>
             <input type="password" id="accessCode" placeholder="Enter code" style="margin-bottom: 15px;">
             <button onclick="validateAccess()">Enter</button>
             <p class="error" id="loginError" style="display: none;">Incorrect code!</p>
@@ -308,6 +398,10 @@
     </div>
 
     <div class="container">
+        <div class="logo-header">
+            <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
+        </div>
+        
         <h1>🏰 HEMA Club Tracker</h1>
         
         <div class="nav-tabs">
@@ -318,6 +412,10 @@
 
         <!-- Sudden Death Section -->
         <div class="section active" id="suddenDeath">
+            <div class="logo-section">
+                <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
+            </div>
+            
             <div class="card">
                 <h3>Log Your Bout</h3>
                 <div class="form-group">
@@ -364,9 +462,13 @@
 
         <!-- Leaderboard Section -->
         <div class="section" id="leaderboard">
+            <div class="logo-section">
+                <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
+            </div>
+            
             <div class="card">
                 <h3>🏆 Sudden Death Leaderboard</h3>
-                <p style="margin-bottom: 15px; color: #aaa;">Average wins per member (all-time)</p>
+                <p style="margin-bottom: 15px; color: rgba(255,255,255,0.8);">Average wins per member (all-time)</p>
                 <table>
                     <thead>
                         <tr>
@@ -389,6 +491,10 @@
 
         <!-- Tournament Section -->
         <div class="section" id="tournament">
+            <div class="logo-section">
+                <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
+            </div>
+            
             <div class="card">
                 <h3>🎯 Setup Tournament</h3>
                 <div class="form-group">
@@ -426,6 +532,10 @@
                 </div>
             </div>
         </div>
+
+        <div class="logo-footer">
+            <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
+        </div>
     </div>
 
     <script>
@@ -439,7 +549,7 @@
         ];
 
         // Access code (simple validation)
-        const ACCESS_CODE = "HEMA2024";
+        const ACCESS_CODE = "HEMA2026";
 
         // Data storage (using localStorage for persistence)
         let suddenDeathData = JSON.parse(localStorage.getItem('suddenDeathData')) || [];
@@ -565,14 +675,14 @@
             const currentName = document.getElementById('sdName').value;
             
             if (!currentName) {
-                container.innerHTML = '<p style="color: #aaa;">Select your name to see your history</p>';
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.7);">Select your name to see your history</p>';
                 return;
             }
 
             const userEntries = suddenDeathData.filter(e => e.name === currentName);
             
             if (userEntries.length === 0) {
-                container.innerHTML = '<p style="color: #aaa;">No bouts logged yet</p>';
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.7);">No bouts logged yet</p>';
                 return;
             }
 
@@ -646,7 +756,7 @@
             const container = document.getElementById('targetAreas');
             
             if (sorted.length === 0) {
-                container.innerHTML = '<p style="color: #aaa;">No target areas logged yet</p>';
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.7);">No target areas logged yet</p>';
                 return;
             }
 
@@ -759,8 +869,8 @@
                             <span>Match ${index + 1} - ${match.pool}</span>
                             ${isCompleted ? '<span class="success">✓ Completed</span>' : ''}
                         </div>
-                        <div style="text-align: center; margin-bottom: 15px; font-size: 1.3em; font-weight: bold;">
-                            ${match.fighter1} <span style="color: #e94560;">VS</span> ${match.fighter2}
+                        <div style="text-align: center; margin-bottom: 15px; font-size: 1.3em; font-weight: bold; color: #fff;">
+                            ${match.fighter1} <span style="color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5);">VS</span> ${match.fighter2}
                         </div>
                         <div class="match-stats">
                             <div class="stat-box">
@@ -794,7 +904,7 @@
                         </div>
                         <div class="form-group">
                             <label>Winner</label>
-                            <select id="${matchId}_winner" onchange="updatePoints('${matchId}')">
+                            <select id="${matchId}_winner" onchange="updatePoints('${matchId}')" style="background: rgba(255,255,255,0.9); color: #800020;">
                                 <option value="">Select winner</option>
                                 <option value="1" ${tournamentData.matchData[matchId].winner === '1' ? 'selected' : ''}>${match.fighter1}</option>
                                 <option value="2" ${tournamentData.matchData[matchId].winner === '2' ? 'selected' : ''}>${match.fighter2}</option>
