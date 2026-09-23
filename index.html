@@ -1,379 +1,86 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HEMA Club Tracker</title>
-  <style>
-    :root {
-      --maroon: #78001f;
-      --maroon-dark: #440011;
-      --maroon-light: #a30b37;
-      --white: #ffffff;
-      --off-white: #f8f5f6;
-      --line: rgba(255,255,255,.28);
-      --green: #c6f6d5;
-      --red: #ffd0d0;
-      --gold: #ffd369;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: var(--white); background: linear-gradient(135deg, var(--maroon) 0%, var(--maroon-dark) 100%); min-height: 100vh; }
-    button, input, select { font: inherit; }
-    .app { max-width: 1050px; margin: 0 auto; padding: 18px; }
-    .brand { display: flex; align-items: center; justify-content: center; gap: 16px; text-align: center; padding: 6px 0 18px; }
-    .brand img { max-height: 84px; max-width: 130px; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0,0,0,.3)); }
-    .brand h1 { margin: 0; font-size: clamp(1.65rem, 5vw, 2.35rem); }
-    .brand p { margin: 5px 0 0; color: rgba(255,255,255,.85); }
-    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-    .tab { flex: 1; min-width: 135px; border: 2px solid var(--white); border-radius: 9px; background: rgba(255,255,255,.08); color: var(--white); padding: 11px 12px; font-weight: bold; cursor: pointer; }
-    .tab.active, .tab:hover { background: var(--white); color: var(--maroon); }
-    .panel { display: none; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.10); padding: 18px; box-shadow: 0 8px 26px rgba(0,0,0,.17); }
-    .panel.active { display: block; }
-    .card { background: rgba(255,255,255,.11); border: 1px solid var(--line); border-radius: 11px; padding: 16px; margin-bottom: 16px; }
-    .card h2, .card h3 { margin: 0 0 12px; }
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-    label { display: block; font-weight: bold; margin-bottom: 5px; }
-    input, select { width: 100%; min-height: 43px; border: 1px solid #ddd; border-radius: 8px; padding: 9px; background: var(--white); color: #3f0011; }
-    button { border: 0; border-radius: 8px; padding: 11px 13px; background: var(--white); color: var(--maroon); font-weight: bold; cursor: pointer; }
-    button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
-    button:disabled { opacity: .55; cursor: wait; }
-    .outline { background: transparent; color: var(--white); border: 2px solid var(--white); }
-    .danger { background: #d02036; color: var(--white); }
-    .small { padding: 7px 10px; font-size: .9rem; }
-    .muted { color: rgba(255,255,255,.75); }
-    .notice { padding: 10px 12px; border-radius: 8px; margin: 10px 0; display: none; }
-    .notice.show { display: block; }
-    .notice.success { background: rgba(26, 130, 68, .48); border: 1px solid #86efac; }
-    .notice.error { background: rgba(170, 25, 44, .48); border: 1px solid #fecaca; }
-    .notice.info { background: rgba(23, 92, 151, .45); border: 1px solid #bfdbfe; }
-    table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,.1); overflow: hidden; }
-    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    th { background: rgba(255,255,255,.17); }
-    .scroll { overflow-x: auto; }
-    .status { display: inline-block; padding: 3px 8px; border-radius: 99px; font-size: .82rem; font-weight: bold; background: rgba(255,255,255,.18); }
-    .timer { font-size: clamp(2.5rem, 10vw, 5rem); font-weight: bold; text-align: center; letter-spacing: 3px; margin: 8px 0; }
-    .timer.overtime { color: var(--gold); }
-    .match-score { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; text-align: center; padding: 13px; background: rgba(0,0,0,.15); border-radius: 10px; margin: 10px 0; }
-    .fighter-name { font-weight: bold; font-size: 1.05rem; }
-    .score-number { font-size: 2rem; font-weight: bold; }
-    .score-meta { font-size: .85rem; color: rgba(255,255,255,.82); }
-    .vs { font-weight: bold; }
-    .exchange-controls { display: grid; grid-template-columns: 1.3fr 1fr 1fr auto; gap: 10px; align-items: end; }
-    .quality-row, .point-row, .button-row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .choice { background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.65); color: var(--white); }
-    .choice.selected { background: var(--white); color: var(--maroon); }
-    .exchange-log { margin-top: 10px; max-height: 200px; overflow: auto; }
-    .exchange-item { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding: 8px 2px; }
-    .admin-gate { border: 2px solid rgba(255,211,105,.8); background: rgba(0,0,0,.17); }
-    .checkbox-list { columns: 2; gap: 20px; }
-    .checkbox-list label { font-weight: normal; margin: 7px 0; break-inside: avoid; }
-    .checkbox-list input { width: auto; min-height: auto; margin-right: 7px; }
-    .podium { display: flex; gap: 10px; justify-content: center; align-items: flex-end; min-height: 170px; }
-    .podium-place { width: 30%; max-width: 150px; text-align: center; display: flex; flex-direction: column; justify-content: end; }
-    .podium-block { color: #4b0012; font-weight: bold; display: grid; place-items: center; border-radius: 8px 8px 0 0; }
-    .first { height: 130px; background: #ffd369; } .second { height: 90px; background: #d5d7dd; } .third { height: 65px; background: #cd8552; color: var(--white); }
-    .footer { text-align: center; padding: 22px 0 4px; color: rgba(255,255,255,.72); font-size: .9rem; }
-    @media (max-width: 700px) {
-      .grid, .grid3, .exchange-controls { grid-template-columns: 1fr; }
-      .checkbox-list { columns: 1; }
-      .brand img { max-height: 62px; }
-      th, td { padding: 8px 6px; font-size: .9rem; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HEMA Club Tracker</title>
+<style>
+:root{--maroon:#78001f;--dark:#41000f;--white:#fff;--line:rgba(255,255,255,.28);--gold:#ffd369;--green:#bbf7d0;--danger:#fca5a5}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(135deg,var(--maroon),var(--dark));color:#fff;font-family:Arial,Helvetica,sans-serif}.app{max-width:1080px;margin:auto;padding:18px}.brand{display:flex;justify-content:center;align-items:center;gap:14px;text-align:center;margin:0 0 16px}.brand img{max-width:110px;max-height:78px;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3))}.brand h1{margin:0;font-size:clamp(1.6rem,5vw,2.3rem)}.brand p{margin:5px 0;color:rgba(255,255,255,.8)}button,input,select{font:inherit}button{border:0;border-radius:9px;background:#fff;color:var(--maroon);padding:11px 13px;font-weight:bold;cursor:pointer}button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.25)}button:disabled{opacity:.55;cursor:wait}.outline{background:transparent;border:2px solid #fff;color:#fff}.small{padding:7px 9px;font-size:.9rem}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab{flex:1;min-width:130px;background:rgba(255,255,255,.08);border:2px solid #fff;color:#fff}.tab.active,.tab:hover{background:#fff;color:var(--maroon)}.panel{display:none;background:rgba(255,255,255,.09);border:1px solid var(--line);border-radius:14px;padding:16px}.panel.active{display:block}.card{background:rgba(255,255,255,.10);border:1px solid var(--line);border-radius:11px;padding:15px;margin-bottom:15px}.card h2,.card h3{margin:0 0 10px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}label{display:block;font-weight:bold;margin:0 0 5px}input,select{width:100%;min-height:42px;border:1px solid #ddd;border-radius:8px;padding:9px;background:#fff;color:#450012}.muted{color:rgba(255,255,255,.76)}.notice{display:none;margin:0 0 12px;padding:10px 12px;border-radius:9px}.notice.show{display:block}.notice.info{background:rgba(30,94,150,.46);border:1px solid #bfdbfe}.notice.success{background:rgba(25,125,63,.46);border:1px solid var(--green)}.notice.error{background:rgba(170,30,45,.48);border:1px solid var(--danger)}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 7px;border-bottom:1px solid var(--line);vertical-align:top}th{background:rgba(255,255,255,.16)}.status{display:inline-block;font-size:.8rem;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.18);text-transform:capitalize}.timer{font-size:clamp(2.6rem,11vw,5rem);font-weight:bold;text-align:center;letter-spacing:3px;margin:8px 0}.timer.sd{color:var(--gold);font-size:clamp(1.6rem,7vw,3.2rem);letter-spacing:1px}.match-score{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:center;text-align:center;background:rgba(0,0,0,.16);padding:12px;border-radius:10px}.fighter{font-weight:bold;font-size:1.05rem}.score{font-size:2rem;font-weight:bold}.scoremeta{font-size:.86rem;color:rgba(255,255,255,.82)}.vs{font-weight:bold}.button-row,.choice-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.choice{background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.65);color:#fff}.choice.selected{background:#fff;color:var(--maroon)}.exchange-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr auto;gap:10px;align-items:end;margin-top:12px}.exchange-log{margin-top:12px;max-height:230px;overflow:auto}.exchange{display:flex;justify-content:space-between;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}.admin{border:2px solid rgba(255,211,105,.85)}.checklist{columns:2;gap:18px}.checklist label{break-inside:avoid;font-weight:normal;margin:7px 0}.checklist input{width:auto;min-height:auto;margin-right:7px}.insight{border-left:4px solid var(--gold)}.podium{display:flex;justify-content:center;align-items:flex-end;gap:10px;min-height:170px}.podplace{width:30%;max-width:155px;text-align:center;display:flex;flex-direction:column;justify-content:flex-end;gap:7px}.block{border-radius:8px 8px 0 0;color:#490012;font-weight:bold;display:grid;place-items:center}.first{height:130px;background:#ffd369}.second{height:90px;background:#d8dce3}.third{height:65px;background:#c97c4b;color:#fff}.footer{text-align:center;color:rgba(255,255,255,.7);font-size:.9rem;padding:20px 0 2px}@media(max-width:700px){.grid,.grid3,.exchange-grid{grid-template-columns:1fr}.checklist{columns:1}.brand img{max-height:58px}th,td{font-size:.88rem;padding:8px 5px}}
+</style>
 </head>
 <body>
-  <main class="app">
-    <header class="brand">
-      <img src="logo.png" alt="Club logo" onerror="this.style.display='none'">
-      <div><h1>HEMA Club Tracker</h1><p>Sudden Death · In-house Tournaments · Shared Club Results</p></div>
-    </header>
+<main class="app">
+<header class="brand"><img src="logo.png" alt="Club logo" onerror="this.style.display='none'"><div><h1>HEMA Club Tracker</h1><p>Sudden Death · In-house Tournaments · Shared Results</p></div></header>
+<div id="notice" class="notice"></div>
+<nav class="tabs"><button class="tab active" data-panel="sudden">⚔️ Sudden Death</button><button class="tab" data-panel="leaderboard">📊 Leaderboard</button><button class="tab" data-panel="tournament">🏆 Tournament</button></nav>
 
-    <div id="message" class="notice"></div>
+<section id="sudden" class="panel active">
+  <div class="card"><h2>Log a Sudden Death Bout</h2><p class="muted">Enter each bout once only. This saves to the shared Google Sheet.</p>
+    <div class="grid3"><div><label for="sdName">Your name</label><select id="sdName"></select></div><div><label for="sdOpponent">Opponent</label><select id="sdOpponent"></select></div><div><label for="sdMonth">Month</label><select id="sdMonth"></select></div><div><label for="sdResult">Result</label><select id="sdResult"><option value="win">Win</option><option value="loss">Loss</option></select></div><div><label for="sdWeapon">Weapon</label><select id="sdWeapon"></select></div><div><label for="sdLocation">Decisive target / cut location</label><input id="sdLocation" maxlength="120" placeholder="e.g. head, outside forearm"></div></div>
+    <button id="saveSudden" style="margin-top:14px">Save Sudden Death Result</button>
+  </div>
+  <div class="card insight"><h3>Your improvement insight</h3><div id="sdInsight" class="muted">Select your name to see patterns in your recorded results.</div></div>
+  <div class="card"><h3>Your history</h3><div id="sdHistory" class="muted">Select your name to view history.</div></div>
+</section>
 
-    <nav class="tabs" aria-label="Sections">
-      <button class="tab active" data-panel="sudden">⚔️ Sudden Death</button>
-      <button class="tab" data-panel="leaderboard">📊 Leaderboard</button>
-      <button class="tab" data-panel="tournament">🏆 Tournament</button>
-    </nav>
+<section id="leaderboard" class="panel"><div class="card"><h2>Sudden Death Leaderboard</h2><p class="muted">Ranked by win rate, then total wins.</p><div id="leaderboardTable" class="scroll"></div></div><div class="card"><h2>Deep Target Trends</h2><div id="targetsTable" class="scroll"></div></div></section>
 
-    <section id="sudden" class="panel active">
-      <div class="card">
-        <h2>Log a Sudden Death Bout</h2>
-        <p class="muted">This saves to the shared Google Sheet and updates the club leaderboard.</p>
-        <div class="grid">
-          <div><label for="sdName">Your name</label><select id="sdName"></select></div>
-          <div><label for="sdMonth">Month</label><select id="sdMonth"></select></div>
-          <div><label for="sdResult">Result</label><select id="sdResult"><option value="win">Win</option><option value="loss">Loss</option></select></div>
-          <div><label for="sdLocation">Deep target / cut location</label><input id="sdLocation" maxlength="120" placeholder="e.g. upper inside forearm"></div>
-        </div>
-        <button id="saveSudden" style="margin-top:14px">Save Sudden Death Result</button>
-      </div>
-      <div class="card"><h3>Your recorded history</h3><div id="sdHistory" class="muted">Select your name to view history.</div></div>
-    </section>
+<section id="tournament" class="panel">
+<div id="adminGate" class="card admin"><h2>Coach / Referee Access</h2><p class="muted">Tournament setup and scoring use the private admin code verified by the Google Sheets backend.</p><div class="grid"><div><label for="adminCode">Admin code</label><input id="adminCode" type="password" autocomplete="off"></div><div style="display:flex;align-items:end"><button id="unlock">Unlock tournament controls</button></div></div></div>
+<div id="tournamentControls" hidden>
+  <div class="card"><h2>Start a Tournament</h2><div class="grid3"><div><label for="tName">Tournament name</label><input id="tName" value="In-house Tournament"></div><div><label for="tMonth">Month</label><select id="tMonth"></select></div><div><label for="tFormat">Format</label><select id="tFormat"><option value="one_pool">One pool — round robin</option><option value="two_pools">Two pools — round robin</option></select></div></div><div id="finalSetting" style="margin-top:12px" hidden><label><input id="finals" type="checkbox" checked style="width:auto;min-height:auto;margin-right:7px">After pools: create semi-finals, third-place bout and final</label></div><h3 style="margin-top:16px">Participants</h3><div id="participants" class="checklist"></div><button id="create" style="margin-top:14px">Generate Tournament Fixtures</button></div>
+  <div id="tView" hidden><div class="card"><h2 id="tTitle"></h2><div id="tMeta" class="muted"></div><div class="button-row"><button id="refresh" class="small outline">Refresh from Sheet</button><button id="makeSemis" class="small" hidden>Create semi-finals</button><button id="makeFinals" class="small" hidden>Create final and third-place bout</button></div></div><div class="card"><h2>Pool Standings</h2><div id="poolTables"></div></div><div class="card"><h2>Matches</h2><div id="matchList"></div></div><div class="card"><h2>Overall Results</h2><div id="podium" class="podium"></div><div id="overall" class="scroll"></div></div></div>
+</div></section>
+<footer class="footer"><img src="logo.png" alt="Club logo" style="max-height:42px;max-width:80px;vertical-align:middle;margin-right:7px" onerror="this.style.display='none'">HEMA Club Tracker</footer>
+</main>
 
-    <section id="leaderboard" class="panel">
-      <div class="card"><h2>Sudden Death Leaderboard</h2><p class="muted">Ranked by win rate, then number of wins.</p><div id="leaderboardTable" class="scroll"></div></div>
-      <div class="card"><h2>Deep Target Trends</h2><p class="muted">Entries are grouped exactly as they are typed. Use consistent wording for the best analysis.</p><div id="targetsTable" class="scroll"></div></div>
-    </section>
-
-    <section id="tournament" class="panel">
-      <div id="adminGate" class="card admin-gate">
-        <h2>Coach / Referee Access</h2>
-        <p class="muted">Tournament setup and scoring require the private admin code. It is checked by the Google Apps Script backend, not stored in this page.</p>
-        <div class="grid"><div><label for="adminCode">Admin code</label><input id="adminCode" type="password" autocomplete="off" placeholder="Enter admin code"></div><div style="display:flex;align-items:end"><button id="adminLogin">Unlock tournament controls</button></div></div>
-      </div>
-
-      <div id="tournamentControls" hidden>
-        <div class="card">
-          <h2>Start a Tournament</h2>
-          <div class="grid3">
-            <div><label for="tournamentName">Tournament name</label><input id="tournamentName" value="In-house Tournament"></div>
-            <div><label for="tournamentMonth">Month</label><select id="tournamentMonth"></select></div>
-            <div><label for="tournamentFormat">Format</label><select id="tournamentFormat"><option value="one_pool">One pool — round robin</option><option value="two_pools">Two pools — round robin</option></select></div>
-          </div>
-          <div id="finalsSetting" style="margin-top:12px" hidden><label><input id="finalsEnabled" type="checkbox" checked style="width:auto;min-height:auto;margin-right:7px">Run semi-finals, a third-place bout and a final after pool stages</label></div>
-          <h3 style="margin-top:16px">Participants</h3><div id="participantList" class="checkbox-list"></div>
-          <button id="createTournament" style="margin-top:14px">Generate Tournament Fixtures</button>
-        </div>
-
-        <div id="tournamentView" hidden>
-          <div class="card"><h2 id="tournamentTitle">Tournament</h2><div id="tournamentMeta" class="muted"></div></div>
-          <div class="card"><h2>Pool Standings</h2><div id="poolStandings"></div></div>
-          <div class="card"><h2>Matches</h2><div id="matchesList"></div></div>
-          <div class="card"><h2>Overall Results</h2><div id="podium" class="podium"></div><div id="overallStandings" class="scroll"></div></div>
-        </div>
-      </div>
-    </section>
-
-    <footer class="footer"><img src="logo.png" alt="Club logo" style="max-height:42px;max-width:80px;vertical-align:middle;margin-right:8px" onerror="this.style.display='none'">HEMA Club Tracker</footer>
-  </main>
-
-  <script>
-    /* CONFIGURATION: The Web App URL is already configured. Replace ONLY the API key placeholder before uploading to GitHub. */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwJ_JFTlNxIH9s32GST3URkWCqkQ1SZuPsRAShLOAj4eTUOsM9KgRMRPnHDK-9vCFdq/exec';
-    const PUBLIC_API_KEY = 'HEMA-API-7b9xQ2mL5rV8kN3pZ6';
-    const ACCESS_CODE = 'HEMA2026';
-
-    const MEMBERS = [
-      'Helen Bearse','Bogdan Calin','Matthew Delaney','Jordan Dunne','Tamas Gal','Jack K','William Marshall','Glenn Moran','Oisin O\'Connor','Ilia Postolov','Jose Serrano','Ralph Delos Reyes','Sebastian Espinoza','Boris Galkin','Ali Sher Halim','Dmitrii Sazanov','Gavie (Man Ho Cheng)','Margherita Frezza','Maciej Czajowski','Conor McKeon','JUDE WOODFULL'
-    ];
-    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    const state = { suddenDeath: [], adminCode: '', currentTournament: null, timer: null, timerMatchId: null, selectedQuality: {}, selectedPoints: {} };
-
-    const $ = id => document.getElementById(id);
-    const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
-    const now = () => new Date().toISOString();
-    const makeId = prefix => prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-
-    function showMessage(text, type = 'info') {
-      const el = $('message'); el.className = 'notice show ' + type; el.textContent = text;
-      clearTimeout(showMessage.timer); showMessage.timer = setTimeout(() => el.classList.remove('show'), 5500);
-    }
-
-    async function api(action, payload = null, admin = false) {
-      if (PUBLIC_API_KEY === 'PASTE_YOUR_PUBLIC_API_KEY_HERE') throw new Error('Set PUBLIC_API_KEY in index.html before using the app.');
-      if (!payload) {
-        const url = API_URL + '?action=' + encodeURIComponent(action) + '&apiKey=' + encodeURIComponent(PUBLIC_API_KEY);
-        const res = await fetch(url); const data = await res.json(); if (!data.ok) throw new Error(data.error || 'Request failed'); return data;
-      }
-      const body = Object.assign({}, payload, { action, apiKey: PUBLIC_API_KEY });
-      if (admin) body.adminCode = state.adminCode;
-      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
-      const data = await res.json(); if (!data.ok) throw new Error(data.error || 'Request failed'); return data;
-    }
-
-    function populateSelect(id, values, selected) {
-      $(id).innerHTML = values.map(value => `<option value="${esc(value)}" ${value === selected ? 'selected' : ''}>${esc(value)}</option>`).join('');
-    }
-
-    function init() {
-      const currentMonth = MONTHS[new Date().getMonth()];
-      $('sdName').innerHTML = '<option value="">Select your name</option>' + MEMBERS.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
-      populateSelect('sdMonth', MONTHS, currentMonth); populateSelect('tournamentMonth', MONTHS, currentMonth);
-      $('participantList').innerHTML = MEMBERS.map((m, i) => `<label><input type="checkbox" value="${esc(m)}" id="member_${i}">${esc(m)}</label>`).join('');
-      document.querySelectorAll('.tab').forEach(button => button.addEventListener('click', () => openPanel(button.dataset.panel)));
-      $('sdName').addEventListener('change', renderSuddenHistory);
-      $('saveSudden').addEventListener('click', saveSuddenDeath);
-      $('adminLogin').addEventListener('click', unlockTournament);
-      $('tournamentFormat').addEventListener('change', () => $('finalsSetting').hidden = $('tournamentFormat').value !== 'two_pools');
-      $('createTournament').addEventListener('click', createTournament);
-      loadSuddenDeath();
-    }
-
-    function openPanel(id) {
-      document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === id));
-      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.panel === id));
-      if (id === 'leaderboard') { renderLeaderboard(); renderTargets(); }
-    }
-
-    async function loadSuddenDeath() {
-      try { const result = await api('getSuddenDeath'); state.suddenDeath = result.data || []; renderSuddenHistory(); renderLeaderboard(); renderTargets(); }
-      catch (error) { showMessage('Could not load shared data: ' + error.message, 'error'); }
-    }
-
-    async function saveSuddenDeath() {
-      const name = $('sdName').value, month = $('sdMonth').value, result = $('sdResult').value, location = $('sdLocation').value.trim();
-      if (!name) return showMessage('Select your name first.', 'error');
-      const button = $('saveSudden'); button.disabled = true;
-      const entry = { id: makeId('sd'), name, month, result, location, timestamp: now() };
-      try { await api('addSuddenDeath', { entry }); state.suddenDeath.push(entry); $('sdLocation').value = ''; renderSuddenHistory(); renderLeaderboard(); renderTargets(); showMessage('Sudden Death result saved to the club sheet.', 'success'); }
-      catch (error) { showMessage('Save failed: ' + error.message, 'error'); }
-      finally { button.disabled = false; }
-    }
-
-    function renderSuddenHistory() {
-      const name = $('sdName').value; const el = $('sdHistory');
-      if (!name) { el.innerHTML = 'Select your name to view history.'; return; }
-      const rows = state.suddenDeath.filter(r => r.name === name).slice().reverse();
-      if (!rows.length) { el.innerHTML = 'No bouts recorded yet.'; return; }
-      el.innerHTML = `<div class="scroll"><table><thead><tr><th>Month</th><th>Result</th><th>Target / cut location</th><th>Recorded</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.month)}</td><td>${r.result === 'win' ? '🏅 Win' : 'Loss'}</td><td>${esc(r.location || '—')}</td><td>${new Date(r.timestamp).toLocaleDateString()}</td></tr>`).join('')}</tbody></table></div>`;
-    }
-
-    function suddenStats() {
-      const stats = Object.fromEntries(MEMBERS.map(n => [n, { name:n, wins:0, total:0 }]));
-      state.suddenDeath.forEach(r => { if (stats[r.name]) { stats[r.name].total++; if (r.result === 'win') stats[r.name].wins++; } });
-      return Object.values(stats).filter(s => s.total).sort((a,b) => (b.wins/b.total)-(a.wins/a.total) || b.wins-a.wins || a.name.localeCompare(b.name));
-    }
-
-    function renderLeaderboard() {
-      const rows = suddenStats(); const el = $('leaderboardTable');
-      if (!rows.length) { el.innerHTML = '<p class="muted">No Sudden Death bouts have been recorded yet.</p>'; return; }
-      el.innerHTML = `<table><thead><tr><th>Rank</th><th>Fighter</th><th>Wins</th><th>Bouts</th><th>Win rate</th></tr></thead><tbody>${rows.map((s,i) => `<tr><td>${['🥇','🥈','🥉'][i] || i+1}</td><td>${esc(s.name)}</td><td>${s.wins}</td><td>${s.total}</td><td>${(100*s.wins/s.total).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`;
-    }
-
-    function renderTargets() {
-      const map = {}; state.suddenDeath.forEach(r => { const key = (r.location || '').trim().toLowerCase(); if (key) map[key] = (map[key] || 0) + 1; });
-      const rows = Object.entries(map).sort((a,b) => b[1]-a[1]); const el = $('targetsTable');
-      el.innerHTML = rows.length ? `<table><thead><tr><th>Target / cut location</th><th>Times recorded</th></tr></thead><tbody>${rows.map(([name,count]) => `<tr><td>${esc(name)}</td><td>${count}</td></tr>`).join('')}</tbody></table>` : '<p class="muted">No target locations have been recorded yet.</p>';
-    }
-
-    async function unlockTournament() {
-      const code = $('adminCode').value; if (!code) return showMessage('Enter the tournament admin code.', 'error');
-      state.adminCode = code;
-      try {
-        await api('getTournaments');
-        $('adminGate').hidden = true; $('tournamentControls').hidden = false; showMessage('Tournament controls unlocked for this browser session.', 'success');
-      } catch (error) { state.adminCode = ''; showMessage('Could not connect to the backend: ' + error.message, 'error'); }
-    }
-
-    function selectedParticipants() { return [...document.querySelectorAll('#participantList input:checked')].map(i => i.value); }
-    function shuffle(items) { const a = items.slice(); for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-    function roundRobin(players, stage, pool, startNumber, tournamentId) {
-      const matches=[]; let number=startNumber;
-      for (let i=0;i<players.length-1;i++) for (let j=i+1;j<players.length;j++) matches.push(newMatch(players[i], players[j], stage, pool, number++, tournamentId));
-      return matches;
-    }
-    function newMatch(fighter1, fighter2, stage, pool, matchNumber, tournamentId) {
-      return { tournamentId, matchId: makeId('match'), stage, pool, matchNumber, fighter1, fighter2, durationSeconds:120, remainingSeconds:120, status:'not_started', fighter1Points:0, fighter2Points:0, fighter1Clean:0, fighter1Dirty:0, fighter2Clean:0, fighter2Dirty:0, winner:'', suddenDeathRequired:false, startedAt:'', endedAt:'', createdAt:now() };
-    }
-
-    async function createTournament() {
-      const participants = selectedParticipants(); if (participants.length < 2) return showMessage('Select at least two participants.', 'error');
-      const format = $('tournamentFormat').value, finalsEnabled = format === 'two_pools' && $('finalsEnabled').checked;
-      if (format === 'two_pools' && participants.length < 4) return showMessage('Two pools require at least four participants.', 'error');
-      const tournamentId = makeId('tournament'); const tournament = { tournamentId, name:$('tournamentName').value.trim() || 'In-house Tournament', month:$('tournamentMonth').value, year:String(new Date().getFullYear()), format, finalsEnabled, status:'active', createdAt:now() };
-      const shuffled = shuffle(participants); let matches=[];
-      if (format === 'one_pool') matches = roundRobin(shuffled, 'Pool', 'Pool', 1, tournamentId);
-      else { const a=[], b=[]; shuffled.forEach((p,i) => (i%2 ? b : a).push(p)); matches = roundRobin(a,'Pool','Pool A',1,tournamentId).concat(roundRobin(b,'Pool','Pool B', a.length*(a.length-1)/2+1,tournamentId)); }
-      const button=$('createTournament'); button.disabled=true;
-      try { await api('createTournament',{tournament,matches},true); state.currentTournament={tournament,matches,exchanges:[]}; renderTournament(); showMessage('Fixtures created and saved to Google Sheets.', 'success'); }
-      catch(error) { showMessage('Tournament creation failed: '+error.message,'error'); }
-      finally { button.disabled=false; }
-    }
-
-    function currentMatches() { return state.currentTournament ? state.currentTournament.matches : []; }
-    function matchById(id) { return currentMatches().find(m => m.matchId === id); }
-    function matchExchanges(id) { return (state.currentTournament?.exchanges || []).filter(e => e.matchId === id).sort((a,b) => String(a.timestamp).localeCompare(String(b.timestamp))); }
-
-    function renderTournament() {
-      const data = state.currentTournament; if (!data) return; $('tournamentView').hidden=false;
-      $('tournamentTitle').textContent=data.tournament.name;
-      $('tournamentMeta').textContent=`${data.tournament.month} ${data.tournament.year} · ${data.tournament.format === 'one_pool' ? 'One-pool round robin' : 'Two pools'}${data.tournament.finalsEnabled ? ' · Finals enabled' : ''}`;
-      renderPoolStandings(); renderMatches(); renderOverall();
-    }
-
-    function statsForMatches(matches) {
-      const stats={}; matches.forEach(m => {
-        [m.fighter1,m.fighter2].forEach(n => { if (!stats[n]) stats[n]={name:n,wins:0,losses:0,matchPoints:0,clean:0,dirty:0,bouts:0}; });
-        stats[m.fighter1].matchPoints += Number(m.fighter1Points||0); stats[m.fighter1].clean += Number(m.fighter1Clean||0); stats[m.fighter1].dirty += Number(m.fighter1Dirty||0);
-        stats[m.fighter2].matchPoints += Number(m.fighter2Points||0); stats[m.fighter2].clean += Number(m.fighter2Clean||0); stats[m.fighter2].dirty += Number(m.fighter2Dirty||0);
-        if (m.status === 'completed') { stats[m.fighter1].bouts++; stats[m.fighter2].bouts++; if (m.winner === m.fighter1) {stats[m.fighter1].wins++;stats[m.fighter2].losses++;} else if(m.winner === m.fighter2) {stats[m.fighter2].wins++;stats[m.fighter1].losses++;} }
-      });
-      return Object.values(stats).sort((a,b)=>b.wins-a.wins||b.matchPoints-a.matchPoints||b.clean-a.clean||a.name.localeCompare(b.name));
-    }
-    function standingsTable(stats) { return `<div class="scroll"><table><thead><tr><th>#</th><th>Fighter</th><th>W</th><th>L</th><th>Match pts</th><th>Clean</th><th>Dirty</th></tr></thead><tbody>${stats.map((s,i)=>`<tr><td>${i+1}</td><td>${esc(s.name)}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.matchPoints}</td><td>${s.clean}</td><td>${s.dirty}</td></tr>`).join('')}</tbody></table></div>`; }
-    function renderPoolStandings() {
-      const matches=currentMatches().filter(m=>m.stage==='Pool'); const el=$('poolStandings');
-      if (!matches.length) {el.innerHTML='<p class="muted">No pool matches available.</p>';return;}
-      const groups={};matches.forEach(m=>(groups[m.pool] ||= []).push(m));
-      el.innerHTML=Object.entries(groups).map(([pool,ms])=>`<h3>${esc(pool)}</h3>${standingsTable(statsForMatches(ms))}`).join('');
-    }
-
-    function formatTime(seconds) { seconds=Math.max(0,Math.round(Number(seconds)||0)); return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0'); }
-    function renderMatches() {
-      const el=$('matchesList'); const matches=currentMatches().slice().sort((a,b)=>Number(a.matchNumber)-Number(b.matchNumber));
-      el.innerHTML=matches.map(m=>matchCard(m)).join('');
-      matches.forEach(m=>bindMatch(m));
-    }
-    function matchCard(m) {
-      const isSD = m.status==='sudden_death'; const isCompleted=m.status==='completed'; const quality=state.selectedQuality[m.matchId]||'clean'; const points=state.selectedPoints[m.matchId]||1;
-      const exchanges=matchExchanges(m.matchId);
-      return `<article class="card" id="card_${esc(m.matchId)}">
-        <h3>Match ${esc(m.matchNumber)} · ${esc(m.stage)}${m.pool ? ' · '+esc(m.pool):''} <span class="status">${esc(isSD?'Sudden death':m.status.replace('_',' '))}</span></h3>
-        <div class="timer ${isSD?'overtime':''}" id="timer_${esc(m.matchId)}">${isSD?'SUDDEN DEATH':formatTime(m.remainingSeconds)}</div>
-        <div class="match-score"><div><div class="fighter-name">${esc(m.fighter1)}</div><div class="score-number">${m.fighter1Points}</div><div class="score-meta">Clean: ${m.fighter1Clean} · Dirty: ${m.fighter1Dirty}</div></div><div class="vs">VS</div><div><div class="fighter-name">${esc(m.fighter2)}</div><div class="score-number">${m.fighter2Points}</div><div class="score-meta">Clean: ${m.fighter2Clean} · Dirty: ${m.fighter2Dirty}</div></div></div>
-        ${isCompleted ? `<p><strong>Winner:</strong> ${esc(m.winner)}${m.suddenDeathRequired ? ' (sudden death)' : ''}</p>` : `<div class="button-row"><button class="small match-start" data-id="${esc(m.matchId)}">${m.status==='not_started'?'Start 2-minute match':'Resume'}</button><button class="small outline match-pause" data-id="${esc(m.matchId)}">Pause</button><button class="small outline match-end" data-id="${esc(m.matchId)}">End / check result</button></div>
-        <div class="exchange-controls" style="margin-top:12px"><div><label>Scoring fighter</label><select id="fighter_${esc(m.matchId)}"><option value="${esc(m.fighter1)}">${esc(m.fighter1)}</option><option value="${esc(m.fighter2)}">${esc(m.fighter2)}</option></select></div><div><label>Exchange</label><div class="quality-row"><button class="small choice ${quality==='clean'?'selected':''} quality" data-id="${esc(m.matchId)}" data-quality="clean">Clean</button><button class="small choice ${quality==='dirty'?'selected':''} quality" data-id="${esc(m.matchId)}" data-quality="dirty">Dirty</button></div></div><div><label>Points</label><div class="point-row"><button class="small choice ${points===1?'selected':''}" data-id="${esc(m.matchId)}" data-points="1" ${quality==='dirty'?'disabled':''}>1 point</button><button class="small choice ${points===4?'selected':''}" data-id="${esc(m.matchId)}" data-points="4" ${quality==='dirty'?'disabled':''}>4 points</button></div></div><div><button class="record-exchange" data-id="${esc(m.matchId)}">Record exchange</button></div></div>`}
-        <div class="exchange-log">${exchanges.length ? exchanges.map(e=>`<div class="exchange-item"><span>${esc(e.fighter)} — <strong>${esc(e.quality)}</strong> — ${esc(e.points)} pt${Number(e.points)===1?'':'s'}${String(e.isSuddenDeath)==='true'||e.isSuddenDeath===true?' · SUDDEN DEATH':''}</span><span>${e.isSuddenDeath ? 'SD' : formatTime(e.remainingSeconds)} remaining</span></div>`).join('') : '<p class="muted">No scoring exchanges recorded.</p>'}</div>
-      </article>`;
-    }
-
-    function bindMatch(m) {
-      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} .match-start`).forEach(b=>b.onclick=()=>startTimer(m.matchId));
-      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} .match-pause`).forEach(b=>b.onclick=()=>pauseTimer(m.matchId));
-      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} .match-end`).forEach(b=>b.onclick=()=>endMatch(m.matchId));
-      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} .quality`).forEach(b=>b.onclick=()=>{state.selectedQuality[m.matchId]=b.dataset.quality;if(b.dataset.quality==='dirty')state.selectedPoints[m.matchId]=1;renderMatches();});
-      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} [data-points]`).forEach(b=>b.onclick=()=>{state.selectedPoints[m.matchId]=Number(b.dataset.points);renderMatches();});
-      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} .record-exchange`).forEach(b=>b.onclick=()=>recordExchange(m.matchId));
-    }
-
-    async function updateMatch(match) { const response=await api('updateMatch',{match},true); Object.assign(match,response.match); }
-    async function startTimer(id) {
-      const m=matchById(id); if (!m||m.status==='completed'||m.status==='sudden_death')return;
-      if (state.timer) clearInterval(state.timer); m.status='in_progress'; if(!m.startedAt)m.startedAt=now();
-      try { await updateMatch(m); } catch(e){showMessage('Could not start timer: '+e.message,'error');return; }
-      state.timerMatchId=id; state.timer=setInterval(async()=>{
-        const active=matchById(id); if(!active||active.status!=='in_progress')return;
-        active.remainingSeconds=Math.max(0,Number(active.remainingSeconds)-1); const display=$('timer_'+id);if(display)display.textContent=formatTime(active.remainingSeconds);
-        if(active.remainingSeconds===0){clearInterval(state.timer);state.timer=null;await timeExpired(id);}
-      },1000); renderMatches();
-    }
-    async function pauseTimer(id) { const m=matchById(id); if(!m)return; if(state.timerMatchId===id&&state.timer){clearInterval(state.timer);state.timer=null;} if(m.status==='in_progress'){m.status='paused';try{await updateMatch(m);showMessage('Timer paused.','info');}catch(e){showMessage(e.message,'error');}} renderMatches(); }
-    async function timeExpired(id) { const m=matchById(id); if(!m)return; if(Number(m.fighter1Points)===Number(m.fighter2Points)){m.status='sudden_death';m.suddenDeathRequired=true;try{await updateMatch(m);showMessage('Time expired tied: first scoring exchange wins sudden death.','info');}catch(e){showMessage(e.message,'error');}}else{m.status='completed';m.winner=Number(m.fighter1Points)>Number(m.fighter2Points)?m.fighter1:m.fighter2;m.endedAt=now();try{await updateMatch(m);showMessage('Time expired. Winner recorded: '+m.winner,'success');}catch(e){showMessage(e.message,'error');}} renderTournament(); }
-    async function endMatch(id) { const m=matchById(id);if(!m)return; await pauseTimer(id); if(Number(m.fighter1Points)===Number(m.fighter2Points)){m.status='sudden_death';m.suddenDeathRequired=true;try{await updateMatch(m);showMessage('Match is tied: enter the first sudden-death score.','info');}catch(e){showMessage(e.message,'error');}}else{m.status='completed';m.winner=Number(m.fighter1Points)>Number(m.fighter2Points)?m.fighter1:m.fighter2;m.endedAt=now();try{await updateMatch(m);showMessage('Winner recorded: '+m.winner,'success');}catch(e){showMessage(e.message,'error');}}renderTournament(); }
-    async function recordExchange(id) {
-      const m=matchById(id); if(!m||m.status==='completed')return; if(m.status==='in_progress') await pauseTimer(id);
-      const fighter=$('fighter_'+id).value; const quality=state.selectedQuality[id]||'clean'; const points=quality==='dirty'?1:(state.selectedPoints[id]||1); const isSuddenDeath=m.status==='sudden_death';
-      const exchange={tournamentId:m.tournamentId,matchId:id,exchangeId:makeId('exchange'),fighter,quality,points,remainingSeconds:m.remainingSeconds,isSuddenDeath,timestamp:now()};
-      try { const response=await api('recordExchange',{exchange},true); Object.assign(m,response.match); state.currentTournament.exchanges.push(exchange); if(isSuddenDeath)showMessage('Sudden-death winner: '+fighter,'success'); else showMessage('Exchange recorded. Resume when ready.','success'); renderTournament(); }
-      catch(e){showMessage('Could not record exchange: '+e.message,'error');}
-    }
-
-    function renderOverall() {
-      const data=state.currentTournament;if(!data)return;const all=currentMatches();const completed=all.filter(m=>m.status==='completed');const stats=statsForMatches(data.tournament.format==='one_pool'?all:completed.filter(m=>m.stage!=='Pool'));
-      let resultStats;
-      if(data.tournament.format==='one_pool') resultStats=statsForMatches(all);
-      else {
-        const final=completed.find(m=>m.stage==='Final'), third=completed.find(m=>m.stage==='Third Place');
-        if(final){const champ=final.winner, runner=final.winner===final.fighter1?final.fighter2:final.fighter1;let thirdName=third?third.winner:'';resultStats=[{name:champ},{name:runner},...(thirdName?[{name:thirdName}]:[])];}
-        else resultStats=[];
-      }
-      $('podium').innerHTML=resultStats.length>=3?`<div class="podium-place"><div class="podium-block second">2</div><strong>${esc(resultStats[1].name)}</strong></div><div class="podium-place"><div class="podium-block first">1</div><strong>${esc(resultStats[0].name)}</strong></div><div class="podium-place"><div class="podium-block third">3</div><strong>${esc(resultStats[2].name)}</strong></div>`:'';
-      $('overallStandings').innerHTML=data.tournament.format==='one_pool'?standingsTable(statsForMatches(all)):(resultStats.length?`<table><thead><tr><th>Place</th><th>Fighter</th></tr></thead><tbody>${resultStats.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name)}</td></tr>`).join('')}</tbody></table>`:'<p class="muted">Complete the pool stage; elimination fixtures are displayed when the final stage is created.</p>');
-    }
-
-    init();
-  </script>
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbwJ_JFTlNxIH9s32GST3URkWCqkQ1SZuPsRAShLOAj4eTUOsM9KgRMRPnHDK-9vCFdq/exec';
+const PUBLIC_API_KEY='HEMA-API-7b9xQ2mL5rV8kN3pZ6';
+const MEMBERS=['Helen Bearse','Bogdan Calin','Matthew Delaney','Jordan Dunne','Tamas Gal','Jack K','William Marshall','Glenn Moran',"Oisin O'Connor",'Ilia Postolov','Jose Serrano','Ralph Delos Reyes','Sebastian Espinoza','Boris Galkin','Ali Sher Halim','Dmitrii Sazanov','Gavie (Man Ho Cheng)','Margherita Frezza','Maciej Czajowski','Conor McKeon','JUDE WOODFULL'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const WEAPONS=['Longsword','Sidesword','Rapier','Sabre','Sword & Buckler','Messer','Dagger','Polearm','Mixed / Other'];
+const state={sudden:[],admin:'',current:null,timer:null,timerId:null,quality:{},points:{}};
+const $=id=>document.getElementById(id);const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));const now=()=>new Date().toISOString();const uid=p=>p+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+function msg(text,type='info'){const e=$('notice');e.className='notice show '+type;e.textContent=text;clearTimeout(msg.t);msg.t=setTimeout(()=>e.classList.remove('show'),5500)}
+async function api(action,payload=null,admin=false){if(PUBLIC_API_KEY==='PASTE_YOUR_PUBLIC_API_KEY_HERE')throw new Error('Set PUBLIC_API_KEY in index.html first.');if(!payload){const r=await fetch(API_URL+'?action='+encodeURIComponent(action)+'&apiKey='+encodeURIComponent(PUBLIC_API_KEY));const d=await r.json();if(!d.ok)throw new Error(d.error||'Request failed');return d}const body={...payload,action,apiKey:PUBLIC_API_KEY};if(admin)body.adminCode=state.admin;const r=await fetch(API_URL,{method:'POST',body:JSON.stringify(body)});const d=await r.json();if(!d.ok)throw new Error(d.error||'Request failed');return d}
+async function getTournament(tournamentId){const u=API_URL+'?action=getTournament&apiKey='+encodeURIComponent(PUBLIC_API_KEY)+'&tournamentId='+encodeURIComponent(tournamentId);const r=await fetch(u);const d=await r.json();if(!d.ok)throw new Error(d.error||'Request failed');return{tournament:d.tournament,matches:d.matches||[],exchanges:d.exchanges||[]}}
+function fill(idName,items,current,blank=''){ $(idName).innerHTML=(blank?`<option value="">${esc(blank)}</option>`:'')+items.map(x=>`<option value="${esc(x)}" ${x===current?'selected':''}>${esc(x)}</option>`).join('') }
+function init(){const m=MONTHS[new Date().getMonth()];fill('sdName',MEMBERS,'','Select your name');fill('sdOpponent',MEMBERS,'','Select opponent');fill('sdMonth',MONTHS,m);fill('sdWeapon',WEAPONS,'Longsword');fill('tMonth',MONTHS,m);$('participants').innerHTML=MEMBERS.map((n,i)=>`<label><input type="checkbox" id="member${i}" value="${esc(n)}">${esc(n)}</label>`).join('');document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>open(b.dataset.panel));$('sdName').onchange=()=>{updateOpponents();history();insight()};$('saveSudden').onclick=saveSudden;$('unlock').onclick=unlock;$('tFormat').onchange=()=>$('finalSetting').hidden=$('tFormat').value!=='two_pools';$('create').onclick=createTournament;$('refresh').onclick=refreshTournament;$('makeSemis').onclick=createSemis;$('makeFinals').onclick=createFinals;loadSudden()}
+function open(name){document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===name));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.panel===name));if(name==='leaderboard'){leaderboard();targets()}}
+function updateOpponents(){const selected=$('sdName').value;const old=$('sdOpponent').value;const allowed=MEMBERS.filter(n=>n!==selected);fill('sdOpponent',allowed,allowed.includes(old)?old:'','Select opponent')}
+async function loadSudden(){try{state.sudden=(await api('getSuddenDeath')).data||[];history();insight();leaderboard();targets()}catch(e){msg('Could not load shared data: '+e.message,'error')}}
+async function saveSudden(){const name=$('sdName').value,opponent=$('sdOpponent').value,weapon=$('sdWeapon').value;if(!name||!opponent)return msg('Select both your name and your opponent.','error');if(name===opponent)return msg('Opponent must be a different member.','error');const entry={id:uid('sd'),name,opponent,month:$('sdMonth').value,result:$('sdResult').value,weapon,location:$('sdLocation').value.trim(),timestamp:now()};$('saveSudden').disabled=true;try{await api('addSuddenDeath',{entry});state.sudden.push(entry);$('sdLocation').value='';history();insight();leaderboard();targets();msg('Sudden Death result saved.','success')}catch(e){msg('Save failed: '+e.message,'error')}finally{$('saveSudden').disabled=false}}
+function history(){const name=$('sdName').value,e=$('sdHistory');if(!name){e.textContent='Select your name to view history.';return}const rows=state.sudden.filter(x=>x.name===name).slice().reverse();e.innerHTML=rows.length?`<div class="scroll"><table><thead><tr><th>Month</th><th>Opponent</th><th>Weapon</th><th>Result</th><th>Target / location</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.month)}</td><td>${esc(x.opponent)}</td><td>${esc(x.weapon)}</td><td>${x.result==='win'?'🏅 Win':'Loss'}</td><td>${esc(x.location||'—')}</td></tr>`).join('')}</tbody></table></div>`:'No bouts recorded yet.'}
+function insight(){const name=$('sdName').value,e=$('sdInsight');if(!name){e.textContent='Select your name to see patterns in your recorded results.';return}const losses=state.sudden.filter(x=>x.name===name&&x.result==='loss');if(!losses.length){e.textContent='No recorded losses yet—keep logging bouts to build an improvement picture.';return}const count=(rows,key)=>{const map={};rows.forEach(r=>{const v=(r[key]||'Not recorded').trim()||'Not recorded';map[v]=(map[v]||0)+1});return Object.entries(map).sort((a,b)=>b[1]-a[1])};const opp=count(losses,'opponent')[0],against=losses.filter(x=>x.opponent===opp[0]),loc=count(against,'location')[0],weapon=count(against,'weapon')[0];e.innerHTML=`You most often lose to <strong>${esc(opp[0])}</strong> (${opp[1]} recorded loss${opp[1]===1?'':'es'}). Against them, the most frequent decisive target is <strong>${esc(loc[0])}</strong>, most often when using <strong>${esc(weapon[0])}</strong>.<br><span class="muted">Recorded pattern: ${loc[1]} of ${against.length} loss${against.length===1?'':'es'} to ${esc(opp[0])} were logged at that target.</span>`}
+function sdStats(){const s=Object.fromEntries(MEMBERS.map(n=>[n,{name:n,wins:0,total:0}]));state.sudden.forEach(x=>{if(s[x.name]){s[x.name].total++;if(x.result==='win')s[x.name].wins++}});return Object.values(s).filter(x=>x.total).sort((a,b)=>b.wins/b.total-a.wins/a.total||b.wins-a.wins||a.name.localeCompare(b.name))}
+function leaderboard(){const rows=sdStats(),e=$('leaderboardTable');e.innerHTML=rows.length?`<table><thead><tr><th>Rank</th><th>Fighter</th><th>Wins</th><th>Bouts</th><th>Win rate</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td>${['🥇','🥈','🥉'][i]||i+1}</td><td>${esc(x.name)}</td><td>${x.wins}</td><td>${x.total}</td><td>${(100*x.wins/x.total).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`:'<p class="muted">No bouts recorded yet.</p>'}
+function targets(){const c={};state.sudden.forEach(x=>{const k=(x.location||'').trim().toLowerCase();if(k)c[k]=(c[k]||0)+1});const rows=Object.entries(c).sort((a,b)=>b[1]-a[1]);$('targetsTable').innerHTML=rows.length?`<table><thead><tr><th>Target / location</th><th>Count</th></tr></thead><tbody>${rows.map(([n,v])=>`<tr><td>${esc(n)}</td><td>${v}</td></tr>`).join('')}</tbody></table>`:'<p class="muted">No target locations recorded yet.</p>'}
+async function unlock(){if(!$('adminCode').value)return msg('Enter the admin code.','error');state.admin=$('adminCode').value;$('adminGate').hidden=true;$('tournamentControls').hidden=false;msg('Tournament controls unlocked.','success')}
+function checked(){return [...document.querySelectorAll('#participants input:checked')].map(x=>x.value)}function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}function newMatch(tid,f1,f2,stage,pool,num){return{tournamentId:tid,matchId:uid('match'),stage,pool,matchNumber:num,fighter1:f1,fighter2:f2,durationSeconds:120,remainingSeconds:120,status:'not_started',fighter1Points:0,fighter2Points:0,fighter1Clean:0,fighter1Dirty:0,fighter2Clean:0,fighter2Dirty:0,winner:'',suddenDeathRequired:false,startedAt:'',endedAt:'',createdAt:now()}}function robin(players,stage,pool,start,tid){const out=[];let n=start;for(let i=0;i<players.length-1;i++)for(let j=i+1;j<players.length;j++)out.push(newMatch(tid,players[i],players[j],stage,pool,n++));return out}
+async function createTournament(){const people=checked(),format=$('tFormat').value;if(people.length<2)return msg('Select at least two participants.','error');if(format==='two_pools'&&people.length<4)return msg('Two pools require at least four participants.','error');const tid=uid('tournament'),finalsEnabled=format==='two_pools'&&$('finals').checked,tournament={tournamentId:tid,name:$('tName').value.trim()||'In-house Tournament',month:$('tMonth').value,year:String(new Date().getFullYear()),format,finalsEnabled,status:'active',createdAt:now()};const s=shuffle(people);let ms=[];if(format==='one_pool')ms=robin(s,'Pool','Pool',1,tid);else{const a=[],b=[];s.forEach((p,i)=>(i%2?a:b).push(p));const ma=robin(a,'Pool','Pool A',1,tid),mb=robin(b,'Pool','Pool B',ma.length+1,tid);ms=[...ma,...mb]}$('create').disabled=true;try{await api('createTournament',{tournament,matches:ms},true);state.current={tournament,matches:ms,exchanges:[]};renderTournament();msg('Fixtures created and saved.','success')}catch(e){msg('Could not create tournament: '+e.message,'error')}finally{$('create').disabled=false}}
+async function refreshTournament(){if(!state.current)return;try{state.current=await getTournament(state.current.tournament.tournamentId);renderTournament();msg('Tournament refreshed from Google Sheets.','success')}catch(e){msg('Refresh failed: '+e.message,'error')}}
+function matches(){return state.current?.matches||[]}function match(mid){return matches().find(x=>x.matchId===mid)}function ex(mid){return(state.current?.exchanges||[]).filter(x=>x.matchId===mid).sort((a,b)=>String(a.timestamp).localeCompare(String(b.timestamp)))}
+function renderTournament(){if(!state.current)return;$('tView').hidden=false;const t=state.current.tournament;$('tTitle').textContent=t.name;$('tMeta').textContent=`${t.month} ${t.year} · ${t.format==='one_pool'?'One-pool round robin':'Two pools'}${truth(t.finalsEnabled)?' · finals enabled':''}`;poolTables();matchCards();overall();finalButtons()}
+function truth(x){return x===true||String(x)==='true'||x===1||String(x)==='1'}function stats(ms){const s={};ms.forEach(m=>{[m.fighter1,m.fighter2].forEach(n=>s[n]||={name:n,wins:0,losses:0,pts:0,clean:0,dirty:0,bouts:0});s[m.fighter1].pts+=Number(m.fighter1Points||0);s[m.fighter1].clean+=Number(m.fighter1Clean||0);s[m.fighter1].dirty+=Number(m.fighter1Dirty||0);s[m.fighter2].pts+=Number(m.fighter2Points||0);s[m.fighter2].clean+=Number(m.fighter2Clean||0);s[m.fighter2].dirty+=Number(m.fighter2Dirty||0);if(m.status==='completed'){s[m.fighter1].bouts++;s[m.fighter2].bouts++;if(m.winner===m.fighter1){s[m.fighter1].wins++;s[m.fighter2].losses++}else if(m.winner===m.fighter2){s[m.fighter2].wins++;s[m.fighter1].losses++}});return Object.values(s).sort((a,b)=>b.wins-a.wins||b.pts-a.pts||b.clean-a.clean||a.name.localeCompare(b.name))}
+function statTable(rows){return`<div class="scroll"><table><thead><tr><th>#</th><th>Fighter</th><th>W</th><th>L</th><th>Match pts</th><th>Clean</th><th>Dirty</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name)}</td><td>${x.wins}</td><td>${x.losses}</td><td>${x.pts}</td><td>${x.clean}</td><td>${x.dirty}</td></tr>`).join('')}</tbody></table></div>`}
+function poolTables(){const p=matches().filter(m=>m.stage==='Pool'),groups={};p.forEach(m=>(groups[m.pool]||=[]).push(m));$('poolTables').innerHTML=Object.entries(groups).map(([n,ms])=>`<h3>${esc(n)}</h3>${statTable(stats(ms))}`).join('')||'<p class="muted">No pool matches.</p>'}
+function time(n){n=Math.max(0,Math.round(Number(n)||0));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
+function matchCards(){const list=matches().slice().sort((a,b)=>Number(a.matchNumber)-Number(b.matchNumber));$('matchList').innerHTML=list.map(card).join('');list.forEach(bind)}
+function card(m){const done=m.status==='completed',sd=m.status==='sudden_death',q=state.quality[m.matchId]||'clean',p=state.points[m.matchId]||1;return`<article class="card" id="card_${esc(m.matchId)}"><h3>Match ${esc(m.matchNumber)} · ${esc(m.stage)}${m.pool?' · '+esc(m.pool):''} <span class="status">${esc(sd?'sudden death':String(m.status).replace('_',' '))}</span></h3><div class="timer ${sd?'sd':''}" id="timer_${esc(m.matchId)}">${sd?'SUDDEN DEATH':time(m.remainingSeconds)}</div><div class="match-score"><div><div class="fighter">${esc(m.fighter1)}</div><div class="score">${m.fighter1Points}</div><div class="scoremeta">Clean: ${m.fighter1Clean} · Dirty: ${m.fighter1Dirty}</div></div><div class="vs">VS</div><div><div class="fighter">${esc(m.fighter2)}</div><div class="score">${m.fighter2Points}</div><div class="scoremeta">Clean: ${m.fighter2Clean} · Dirty: ${m.fighter2Dirty}</div></div></div>${done?`<p><strong>Winner:</strong> ${esc(m.winner)}${truth(m.suddenDeathRequired)?' — sudden death':''}</p>`:`<div class="button-row"><button class="small start" data-id="${esc(m.matchId)}">${m.status==='not_started'?'Start 2-minute match':'Resume'}</button><button class="small outline pause" data-id="${esc(m.matchId)}">Pause</button><button class="small outline end" data-id="${esc(m.matchId)}">End / check result</button></div><div class="exchange-grid"><div><label>Scoring fighter</label><select id="fighter_${esc(m.matchId)}"><option value="${esc(m.fighter1)}">${esc(m.fighter1)}</option><option value="${esc(m.fighter2)}">${esc(m.fighter2)}</option></select></div><div><label>Exchange</label><div class="choice-row"><button class="small choice quality ${q==='clean'?'selected':''}" data-id="${esc(m.matchId)}" data-q="clean">Clean</button><button class="small choice quality ${q==='dirty'?'selected':''}" data-id="${esc(m.matchId)}" data-q="dirty">Dirty</button></div></div><div><label>Points</label><div class="choice-row"><button class="small choice point ${p===1?'selected':''}" data-id="${esc(m.matchId)}" data-p="1" ${q==='dirty'?'disabled':''}>1 point</button><button class="small choice point ${p===4?'selected':''}" data-id="${esc(m.matchId)}" data-p="4" ${q==='dirty'?'disabled':''}>4 points</button></div></div><div><button class="record" data-id="${esc(m.matchId)}">Record exchange</button></div></div>`}<div class="exchange-log">${ex(m.matchId).length?ex(m.matchId).map(x=>`<div class="exchange"><span>${esc(x.fighter)} — <strong>${esc(x.quality)}</strong> — ${esc(x.points)} pt${Number(x.points)===1?'':'s'}${truth(x.isSuddenDeath)?' · SUDDEN DEATH':''}</span><span>${truth(x.isSuddenDeath)?'SD':time(x.remainingSeconds)+' remaining'}</span></div>`).join(''):'<p class="muted">No scoring exchanges recorded.</p>'}</div></article>`}
+function bind(m){const c=$('card_'+m.matchId);if(!c)return;c.querySelector('.start')?.addEventListener('click',()=>start(m.matchId));c.querySelector('.pause')?.addEventListener('click',()=>pause(m.matchId));c.querySelector('.end')?.addEventListener('click',()=>end(m.matchId));c.querySelector('.record')?.addEventListener('click',()=>record(m.matchId));c.querySelectorAll('.quality').forEach(b=>b.onclick=()=>{state.quality[m.matchId]=b.dataset.q;if(b.dataset.q==='dirty')state.points[m.matchId]=1;matchCards()});c.querySelectorAll('.point').forEach(b=>b.onclick=()=>{state.points[m.matchId]=Number(b.dataset.p);matchCards()})}
+async function saveMatch(m){const r=await api('updateMatch',{match:m},true);Object.assign(m,r.match)}
+async function start(mid){const m=match(mid);if(!m||m.status==='completed'||m.status==='sudden_death')return;if(state.timer)clearInterval(state.timer);if(!m.startedAt)m.startedAt=now();m.status='in_progress';try{await saveMatch(m)}catch(e){msg('Could not start timer: '+e.message,'error');return}state.timerId=mid;state.timer=setInterval(async()=>{const a=match(mid);if(!a||a.status!=='in_progress')return;a.remainingSeconds=Math.max(0,Number(a.remainingSeconds)-1);const d=$('timer_'+mid);if(d)d.textContent=time(a.remainingSeconds);if(a.remainingSeconds===0){clearInterval(state.timer);state.timer=null;state.timerId=null;await expired(mid)}},1000);matchCards()}
+async function pause(mid){const m=match(mid);if(!m)return;if(state.timerId===mid&&state.timer){clearInterval(state.timer);state.timer=null;state.timerId=null}if(m.status==='in_progress'){m.status='paused';try{await saveMatch(m);msg('Timer paused.','info')}catch(e){msg('Could not pause timer: '+e.message,'error')}}matchCards()}
+async function expired(mid){const m=match(mid);if(!m)return;if(Number(m.fighter1Points)===Number(m.fighter2Points)){m.status='sudden_death';m.suddenDeathRequired=true;try{await saveMatch(m);msg('Time expired tied: first scoring exchange wins sudden death.','info')}catch(e){msg(e.message,'error')}}else{m.status='completed';m.winner=Number(m.fighter1Points)>Number(m.fighter2Points)?m.fighter1:m.fighter2;m.endedAt=now();try{await saveMatch(m);msg('Time expired. Winner: '+m.winner,'success')}catch(e){msg(e.message,'error')}}renderTournament()}
+async function end(mid){const m=match(mid);if(!m)return;await pause(mid);if(Number(m.fighter1Points)===Number(m.fighter2Points)){m.status='sudden_death';m.suddenDeathRequired=true;try{await saveMatch(m);msg('Match tied: record the first sudden-death score.','info')}catch(e){msg(e.message,'error')}}else{m.status='completed';m.winner=Number(m.fighter1Points)>Number(m.fighter2Points)?m.fighter1:m.fighter2;m.endedAt=now();try{await saveMatch(m);msg('Winner: '+m.winner,'success')}catch(e){msg(e.message,'error')}}renderTournament();afterMatchCompletion()}
+async function record(mid){const m=match(mid);if(!m||m.status==='completed')return;const sel=$('fighter_'+mid);if(!sel)return msg('Could not find scoring-fighter selector.','error');const fighter=sel.value,q=state.quality[mid]||'clean',p=q==='dirty'?1:(state.points[mid]||1),sd=m.status==='sudden_death';const exchange={tournamentId:m.tournamentId,matchId:mid,exchangeId:uid('exchange'),fighter,quality:q,points:p,remainingSeconds:m.remainingSeconds,isSuddenDeath:sd,timestamp:now()};try{const r=await api('recordExchange',{exchange},true);Object.assign(m,r.match);state.current.exchanges.push(exchange);if(sd){if(state.timer){clearInterval(state.timer);state.timer=null;state.timerId=null}msg('Sudden-death winner: '+fighter,'success');renderTournament();afterMatchCompletion();return}const lead=Math.abs(Number(m.fighter1Points)-Number(m.fighter2Points));if(lead>=9){if(state.timerId===mid&&state.timer){clearInterval(state.timer);state.timer=null;state.timerId=null}m.status='completed';m.winner=Number(m.fighter1Points)>Number(m.fighter2Points)?m.fighter1:m.fighter2;m.endedAt=now();await saveMatch(m);msg('Match ended by 9-point lead: '+m.winner+' wins '+m.fighter1Points+'–'+m.fighter2Points+'.','success');renderTournament();afterMatchCompletion();return}msg('Exchange recorded. Timer continues unless the referee pauses it.','success');renderTournament()}catch(e){msg('Could not record exchange: '+e.message,'error')}}
+function finalButtons(){const t=state.current.tournament,all=matches(),pools=all.filter(m=>m.stage==='Pool'),semis=all.filter(m=>m.stage==='Semi-final'),finals=all.filter(m=>m.stage==='Final'||m.stage==='Third Place');$('makeSemis').hidden=!(t.format==='two_pools'&&truth(t.finalsEnabled)&&pools.length&&pools.every(m=>m.status==='completed')&&!semis.length);$('makeFinals').hidden=!(semis.length===2&&semis.every(m=>m.status==='completed')&&!finals.length)}
+async function createSemis(){const t=state.current.tournament,groups={};matches().filter(m=>m.stage==='Pool').forEach(m=>(groups[m.pool]||=[]).push(m));const a=stats(groups['Pool A']||[]),b=stats(groups['Pool B']||[]);if(a.length<2||b.length<2)return msg('Both pools need at least two fighters.','error');const start=Math.max(...matches().map(m=>Number(m.matchNumber)||0))+1;const add=[newMatch(t.tournamentId,a[0].name,b[1].name,'Semi-final','Finals',start),newMatch(t.tournamentId,b[0].name,a[1].name,'Semi-final','Finals',start+1)];try{await api('appendMatches',{tournamentId:t.tournamentId,matches:add},true);state.current.matches.push(...add);renderTournament();msg('Semi-finals created.','success')}catch(e){msg('Could not create semi-finals: '+e.message,'error')}}
+async function createFinals(){const t=state.current.tournament,semis=matches().filter(m=>m.stage==='Semi-final').sort((a,b)=>Number(a.matchNumber)-Number(b.matchNumber));if(semis.length!==2||!semis.every(m=>m.status==='completed'))return msg('Complete both semi-finals first.','error');const winner1=semis[0].winner,winner2=semis[1].winner,loser1=winner1===semis[0].fighter1?semis[0].fighter2:semis[0].fighter1,loser2=winner2===semis[1].fighter1?semis[1].fighter2:semis[1].fighter1,start=Math.max(...matches().map(m=>Number(m.matchNumber)||0))+1;const add=[newMatch(t.tournamentId,loser1,loser2,'Third Place','Finals',start),newMatch(t.tournamentId,winner1,winner2,'Final','Finals',start+1)];try{await api('appendMatches',{tournamentId:t.tournamentId,matches:add},true);state.current.matches.push(...add);renderTournament();msg('Third-place bout and final created.','success')}catch(e){msg('Could not create finals: '+e.message,'error')}}
+function afterMatchCompletion(){setTimeout(finalButtons,0)}
+function overall(){const t=state.current.tournament;if(t.format==='one_pool'){const r=stats(matches().filter(m=>m.stage==='Pool'));$('podium').innerHTML=r.length>=3?`<div class="podplace"><div class="block second">2</div><strong>${esc(r[1].name)}</strong></div><div class="podplace"><div class="block first">1</div><strong>${esc(r[0].name)}</strong></div><div class="podplace"><div class="block third">3</div><strong>${esc(r[2].name)}</strong></div>`:'';$('overall').innerHTML=statTable(r);return}const final=matches().find(m=>m.stage==='Final'&&m.status==='completed'),third=matches().find(m=>m.stage==='Third Place'&&m.status==='completed');if(final){const first=final.winner,second=final.winner===final.fighter1?final.fighter2:final.fighter1,thirdName=third?third.winner:'';const r=[first,second,...(thirdName?[thirdName]:[])];$('podium').innerHTML=r.length>=3?`<div class="podplace"><div class="block second">2</div><strong>${esc(r[1])}</strong></div><div class="podplace"><div class="block first">1</div><strong>${esc(r[0])}</strong></div><div class="podplace"><div class="block third">3</div><strong>${esc(r[2])}</strong></div>`:'';$('overall').innerHTML=`<table><thead><tr><th>Place</th><th>Fighter</th></tr></thead><tbody>${r.map((n,i)=>`<tr><td>${i+1}</td><td>${esc(n)}</td></tr>`).join('')}</tbody></table>`}else{$('podium').innerHTML='';$('overall').innerHTML='<p class="muted">Complete the pools, then semi-finals, third-place bout and final to display final places.</p>'}}
+init();
+</script>
 </body>
 </html>
