@@ -1,1074 +1,379 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEMA Club Tracker</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #800020 0%, #5a0016 100%);
-            min-height: 100vh;
-            color: #fff;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .logo-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .logo-header img {
-            max-width: 200px;
-            height: auto;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-        }
-        
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #fff;
-            font-size: 2em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .nav-tab {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px 20px;
-            background: rgba(255,255,255,0.1);
-            border: 2px solid #fff;
-            color: #fff;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        
-        .nav-tab:hover, .nav-tab.active {
-            background: #fff;
-            color: #800020;
-            transform: translateY(-2px);
-        }
-        
-        .section {
-            display: none;
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-        
-        .section.active {
-            display: block;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #fff;
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 8px;
-            background: rgba(255,255,255,0.9);
-            color: #800020;
-            font-size: 16px;
-            font-weight: 500;
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: #fff;
-            background: #fff;
-        }
-        
-        button {
-            width: 100%;
-            padding: 14px;
-            background: #fff;
-            border: none;
-            border-radius: 8px;
-            color: #800020;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
-        }
-        
-        button:hover {
-            background: #f0f0f0;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255,255,255,0.3);
-        }
-        
-        button.secondary {
-            background: rgba(255,255,255,0.2);
-            border: 2px solid #fff;
-            color: #fff;
-        }
-        
-        button.secondary:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        
-        .card {
-            background: rgba(255,255,255,0.15);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #fff;
-        }
-        
-        .card h3 {
-            color: #fff;
-            margin-bottom: 10px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
-        }
-        
-        th {
-            background: rgba(255,255,255,0.2);
-            color: #fff;
-            font-weight: bold;
-        }
-        
-        .win { color: #4ade80; font-weight: bold; }
-        .loss { color: #f87171; font-weight: bold; }
-        
-        .match-card {
-            background: rgba(255,255,255,0.15);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-        }
-        
-        .match-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #fff;
-        }
-        
-        .match-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .stat-box {
-            background: rgba(255,255,255,0.1);
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-        
-        .stat-box label {
-            font-size: 0.9em;
-            margin-bottom: 5px;
-            color: #fff;
-        }
-        
-        .stat-box input {
-            text-align: center;
-        }
-        
-        .podium {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            gap: 20px;
-            margin: 30px 0;
-            height: 200px;
-        }
-        
-        .podium-place {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-        }
-        
-        .podium-block {
-            width: 100px;
-            background: linear-gradient(180deg, #fff 0%, #e0e0e0 100%);
-            border-radius: 8px 8px 0 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2em;
-            color: #800020;
-            box-shadow: 0 4px 12px rgba(255,255,255,0.3);
-        }
-        
-        .podium-block.first { 
-            height: 150px; 
-            background: linear-gradient(180deg, #ffd700 0%, #ffaa00 100%);
-            color: #800020;
-        }
-        .podium-block.second { 
-            height: 100px; 
-            background: linear-gradient(180deg, #c0c0c0 0%, #a0a0a0 100%);
-            color: #800020;
-        }
-        .podium-block.third { 
-            height: 70px;
-            background: linear-gradient(180deg, #cd7f32 0%, #b87333 100%);
-            color: #fff;
-        }
-        
-        .podium-name {
-            margin-top: 10px;
-            text-align: center;
-            font-weight: bold;
-            max-width: 120px;
-            color: #fff;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-        
-        .hidden { display: none; }
-        
-        .password-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #800020 0%, #5a0016 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        
-        .password-box {
-            background: rgba(255,255,255,0.1);
-            padding: 40px;
-            border-radius: 12px;
-            border: 3px solid #fff;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            backdrop-filter: blur(10px);
-        }
-        
-        .password-box h2 {
-            color: #fff;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .password-box p {
-            color: #fff;
-            margin-bottom: 20px;
-        }
-        
-        .logo-login {
-            margin-bottom: 20px;
-        }
-        
-        .logo-login img {
-            max-width: 150px;
-            height: auto;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-        }
-        
-        .error {
-            color: #f87171;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        
-        .success {
-            color: #4ade80;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        
-        .logo-footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid rgba(255,255,255,0.2);
-        }
-        
-        .logo-footer img {
-            max-width: 120px;
-            height: auto;
-            opacity: 0.8;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
-        
-        .logo-section {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .logo-section img {
-            max-width: 180px;
-            height: auto;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-        }
-        
-        @media (max-width: 600px) {
-            .nav-tabs {
-                flex-direction: column;
-            }
-            
-            .match-stats {
-                grid-template-columns: 1fr;
-            }
-            
-            table {
-                font-size: 0.9em;
-            }
-            
-            th, td {
-                padding: 8px 4px;
-            }
-            
-            .logo-header img {
-                max-width: 150px;
-            }
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HEMA Club Tracker</title>
+  <style>
+    :root {
+      --maroon: #78001f;
+      --maroon-dark: #440011;
+      --maroon-light: #a30b37;
+      --white: #ffffff;
+      --off-white: #f8f5f6;
+      --line: rgba(255,255,255,.28);
+      --green: #c6f6d5;
+      --red: #ffd0d0;
+      --gold: #ffd369;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: var(--white); background: linear-gradient(135deg, var(--maroon) 0%, var(--maroon-dark) 100%); min-height: 100vh; }
+    button, input, select { font: inherit; }
+    .app { max-width: 1050px; margin: 0 auto; padding: 18px; }
+    .brand { display: flex; align-items: center; justify-content: center; gap: 16px; text-align: center; padding: 6px 0 18px; }
+    .brand img { max-height: 84px; max-width: 130px; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0,0,0,.3)); }
+    .brand h1 { margin: 0; font-size: clamp(1.65rem, 5vw, 2.35rem); }
+    .brand p { margin: 5px 0 0; color: rgba(255,255,255,.85); }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .tab { flex: 1; min-width: 135px; border: 2px solid var(--white); border-radius: 9px; background: rgba(255,255,255,.08); color: var(--white); padding: 11px 12px; font-weight: bold; cursor: pointer; }
+    .tab.active, .tab:hover { background: var(--white); color: var(--maroon); }
+    .panel { display: none; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.10); padding: 18px; box-shadow: 0 8px 26px rgba(0,0,0,.17); }
+    .panel.active { display: block; }
+    .card { background: rgba(255,255,255,.11); border: 1px solid var(--line); border-radius: 11px; padding: 16px; margin-bottom: 16px; }
+    .card h2, .card h3 { margin: 0 0 12px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; }
+    input, select { width: 100%; min-height: 43px; border: 1px solid #ddd; border-radius: 8px; padding: 9px; background: var(--white); color: #3f0011; }
+    button { border: 0; border-radius: 8px; padding: 11px 13px; background: var(--white); color: var(--maroon); font-weight: bold; cursor: pointer; }
+    button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+    button:disabled { opacity: .55; cursor: wait; }
+    .outline { background: transparent; color: var(--white); border: 2px solid var(--white); }
+    .danger { background: #d02036; color: var(--white); }
+    .small { padding: 7px 10px; font-size: .9rem; }
+    .muted { color: rgba(255,255,255,.75); }
+    .notice { padding: 10px 12px; border-radius: 8px; margin: 10px 0; display: none; }
+    .notice.show { display: block; }
+    .notice.success { background: rgba(26, 130, 68, .48); border: 1px solid #86efac; }
+    .notice.error { background: rgba(170, 25, 44, .48); border: 1px solid #fecaca; }
+    .notice.info { background: rgba(23, 92, 151, .45); border: 1px solid #bfdbfe; }
+    table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,.1); overflow: hidden; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: rgba(255,255,255,.17); }
+    .scroll { overflow-x: auto; }
+    .status { display: inline-block; padding: 3px 8px; border-radius: 99px; font-size: .82rem; font-weight: bold; background: rgba(255,255,255,.18); }
+    .timer { font-size: clamp(2.5rem, 10vw, 5rem); font-weight: bold; text-align: center; letter-spacing: 3px; margin: 8px 0; }
+    .timer.overtime { color: var(--gold); }
+    .match-score { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; text-align: center; padding: 13px; background: rgba(0,0,0,.15); border-radius: 10px; margin: 10px 0; }
+    .fighter-name { font-weight: bold; font-size: 1.05rem; }
+    .score-number { font-size: 2rem; font-weight: bold; }
+    .score-meta { font-size: .85rem; color: rgba(255,255,255,.82); }
+    .vs { font-weight: bold; }
+    .exchange-controls { display: grid; grid-template-columns: 1.3fr 1fr 1fr auto; gap: 10px; align-items: end; }
+    .quality-row, .point-row, .button-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .choice { background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.65); color: var(--white); }
+    .choice.selected { background: var(--white); color: var(--maroon); }
+    .exchange-log { margin-top: 10px; max-height: 200px; overflow: auto; }
+    .exchange-item { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding: 8px 2px; }
+    .admin-gate { border: 2px solid rgba(255,211,105,.8); background: rgba(0,0,0,.17); }
+    .checkbox-list { columns: 2; gap: 20px; }
+    .checkbox-list label { font-weight: normal; margin: 7px 0; break-inside: avoid; }
+    .checkbox-list input { width: auto; min-height: auto; margin-right: 7px; }
+    .podium { display: flex; gap: 10px; justify-content: center; align-items: flex-end; min-height: 170px; }
+    .podium-place { width: 30%; max-width: 150px; text-align: center; display: flex; flex-direction: column; justify-content: end; }
+    .podium-block { color: #4b0012; font-weight: bold; display: grid; place-items: center; border-radius: 8px 8px 0 0; }
+    .first { height: 130px; background: #ffd369; } .second { height: 90px; background: #d5d7dd; } .third { height: 65px; background: #cd8552; color: var(--white); }
+    .footer { text-align: center; padding: 22px 0 4px; color: rgba(255,255,255,.72); font-size: .9rem; }
+    @media (max-width: 700px) {
+      .grid, .grid3, .exchange-controls { grid-template-columns: 1fr; }
+      .checkbox-list { columns: 1; }
+      .brand img { max-height: 62px; }
+      th, td { padding: 8px 6px; font-size: .9rem; }
+    }
+  </style>
 </head>
 <body>
-    <div class="password-overlay" id="passwordOverlay">
-        <div class="password-box">
-            <div class="logo-login">
-                <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
-            </div>
-            <h2>🏰 HEMA Club Tracker</h2>
-            <p>Enter access code to continue</p>
-            <input type="password" id="accessCode" placeholder="Enter code" style="margin-bottom: 15px;">
-            <button onclick="validateAccess()">Enter</button>
-            <p class="error" id="loginError" style="display: none;">Incorrect code!</p>
-        </div>
-    </div>
+  <main class="app">
+    <header class="brand">
+      <img src="logo.png" alt="Club logo" onerror="this.style.display='none'">
+      <div><h1>HEMA Club Tracker</h1><p>Sudden Death · In-house Tournaments · Shared Club Results</p></div>
+    </header>
 
-    <div class="container">
-        <div class="logo-header">
-            <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
-        </div>
-        
-        <h1>🏰 HEMA Club Tracker</h1>
-        
-        <div class="nav-tabs">
-            <div class="nav-tab active" onclick="showSection('suddenDeath')">⚔️ Sudden Death</div>
-            <div class="nav-tab" onclick="showSection('leaderboard')">📊 Leaderboard</div>
-            <div class="nav-tab" onclick="showSection('tournament')">🏆 Tournament</div>
-        </div>
+    <div id="message" class="notice"></div>
 
-        <!-- Sudden Death Section -->
-        <div class="section active" id="suddenDeath">
-            <div class="logo-section">
-                <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
-            </div>
-            
-            <div class="card">
-                <h3>Log Your Bout</h3>
-                <div class="form-group">
-                    <label>Your Name</label>
-                    <select id="sdName"></select>
-                </div>
-                <div class="form-group">
-                    <label>Month</label>
-                    <select id="sdMonth">
-                        <option value="January">January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Result</label>
-                    <select id="sdResult">
-                        <option value="win">Win 🎉</option>
-                        <option value="loss">Loss 😔</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Deep Cut Location (for improvement tracking)</label>
-                    <input type="text" id="sdLocation" placeholder="e.g., Inside forearm, Outside shoulder, etc.">
-                </div>
-                <button onclick="addSuddenDeath()">Log Bout</button>
-                <p class="success" id="sdSuccess" style="display: none;">Bout logged successfully!</p>
-            </div>
-            
-            <div class="card" style="margin-top: 20px;">
-                <h3>Your History</h3>
-                <div id="userHistory"></div>
-            </div>
+    <nav class="tabs" aria-label="Sections">
+      <button class="tab active" data-panel="sudden">⚔️ Sudden Death</button>
+      <button class="tab" data-panel="leaderboard">📊 Leaderboard</button>
+      <button class="tab" data-panel="tournament">🏆 Tournament</button>
+    </nav>
+
+    <section id="sudden" class="panel active">
+      <div class="card">
+        <h2>Log a Sudden Death Bout</h2>
+        <p class="muted">This saves to the shared Google Sheet and updates the club leaderboard.</p>
+        <div class="grid">
+          <div><label for="sdName">Your name</label><select id="sdName"></select></div>
+          <div><label for="sdMonth">Month</label><select id="sdMonth"></select></div>
+          <div><label for="sdResult">Result</label><select id="sdResult"><option value="win">Win</option><option value="loss">Loss</option></select></div>
+          <div><label for="sdLocation">Deep target / cut location</label><input id="sdLocation" maxlength="120" placeholder="e.g. upper inside forearm"></div>
+        </div>
+        <button id="saveSudden" style="margin-top:14px">Save Sudden Death Result</button>
+      </div>
+      <div class="card"><h3>Your recorded history</h3><div id="sdHistory" class="muted">Select your name to view history.</div></div>
+    </section>
+
+    <section id="leaderboard" class="panel">
+      <div class="card"><h2>Sudden Death Leaderboard</h2><p class="muted">Ranked by win rate, then number of wins.</p><div id="leaderboardTable" class="scroll"></div></div>
+      <div class="card"><h2>Deep Target Trends</h2><p class="muted">Entries are grouped exactly as they are typed. Use consistent wording for the best analysis.</p><div id="targetsTable" class="scroll"></div></div>
+    </section>
+
+    <section id="tournament" class="panel">
+      <div id="adminGate" class="card admin-gate">
+        <h2>Coach / Referee Access</h2>
+        <p class="muted">Tournament setup and scoring require the private admin code. It is checked by the Google Apps Script backend, not stored in this page.</p>
+        <div class="grid"><div><label for="adminCode">Admin code</label><input id="adminCode" type="password" autocomplete="off" placeholder="Enter admin code"></div><div style="display:flex;align-items:end"><button id="adminLogin">Unlock tournament controls</button></div></div>
+      </div>
+
+      <div id="tournamentControls" hidden>
+        <div class="card">
+          <h2>Start a Tournament</h2>
+          <div class="grid3">
+            <div><label for="tournamentName">Tournament name</label><input id="tournamentName" value="In-house Tournament"></div>
+            <div><label for="tournamentMonth">Month</label><select id="tournamentMonth"></select></div>
+            <div><label for="tournamentFormat">Format</label><select id="tournamentFormat"><option value="one_pool">One pool — round robin</option><option value="two_pools">Two pools — round robin</option></select></div>
+          </div>
+          <div id="finalsSetting" style="margin-top:12px" hidden><label><input id="finalsEnabled" type="checkbox" checked style="width:auto;min-height:auto;margin-right:7px">Run semi-finals, a third-place bout and a final after pool stages</label></div>
+          <h3 style="margin-top:16px">Participants</h3><div id="participantList" class="checkbox-list"></div>
+          <button id="createTournament" style="margin-top:14px">Generate Tournament Fixtures</button>
         </div>
 
-        <!-- Leaderboard Section -->
-        <div class="section" id="leaderboard">
-            <div class="logo-section">
-                <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
-            </div>
-            
-            <div class="card">
-                <h3>🏆 Sudden Death Leaderboard</h3>
-                <p style="margin-bottom: 15px; color: rgba(255,255,255,0.8);">Average wins per member (all-time)</p>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Name</th>
-                            <th>Wins</th>
-                            <th>Total Bouts</th>
-                            <th>Average</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboardBody"></tbody>
-                </table>
-            </div>
-            
-            <div class="card" style="margin-top: 20px;">
-                <h3>📍 Common Target Areas</h3>
-                <div id="targetAreas"></div>
-            </div>
+        <div id="tournamentView" hidden>
+          <div class="card"><h2 id="tournamentTitle">Tournament</h2><div id="tournamentMeta" class="muted"></div></div>
+          <div class="card"><h2>Pool Standings</h2><div id="poolStandings"></div></div>
+          <div class="card"><h2>Matches</h2><div id="matchesList"></div></div>
+          <div class="card"><h2>Overall Results</h2><div id="podium" class="podium"></div><div id="overallStandings" class="scroll"></div></div>
         </div>
+      </div>
+    </section>
 
-        <!-- Tournament Section -->
-        <div class="section" id="tournament">
-            <div class="logo-section">
-                <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
-            </div>
-            
-            <div class="card">
-                <h3>🎯 Setup Tournament</h3>
-                <div class="form-group">
-                    <label>Select Participants</label>
-                    <div id="participantCheckboxes" style="max-height: 300px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;"></div>
-                </div>
-                <div class="form-group">
-                    <label>Number of Pools</label>
-                    <select id="numPools" onchange="togglePoolSelection()">
-                        <option value="1">1 Pool</option>
-                        <option value="2">2 Pools</option>
-                    </select>
-                </div>
-                <div class="form-group" id="poolASelection" style="display: none;">
-                    <label>Pool A Participants</label>
-                    <div id="poolACheckboxes" style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;"></div>
-                </div>
-                <div class="form-group" id="poolBSelection" style="display: none;">
-                    <label>Pool B Participants</label>
-                    <div id="poolBCheckboxes" style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;"></div>
-                </div>
-                <button onclick="generateMatches()">Generate Matches</button>
-            </div>
+    <footer class="footer"><img src="logo.png" alt="Club logo" style="max-height:42px;max-width:80px;vertical-align:middle;margin-right:8px" onerror="this.style.display='none'">HEMA Club Tracker</footer>
+  </main>
 
-            <div id="matchesContainer" class="hidden">
-                <div class="card">
-                    <h3 id="currentPoolTitle">🗡️ Tournament Matches</h3>
-                    <div id="matchesList"></div>
-                </div>
-                
-                <div class="card" style="margin-top: 20px;">
-                    <h3>🏆 Final Results</h3>
-                    <div class="podium" id="podiumDisplay"></div>
-                    <div id="finalStandings"></div>
-                </div>
-            </div>
-        </div>
+  <script>
+    /* CONFIGURATION: The Web App URL is already configured. Replace ONLY the API key placeholder before uploading to GitHub. */
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwJ_JFTlNxIH9s32GST3URkWCqkQ1SZuPsRAShLOAj4eTUOsM9KgRMRPnHDK-9vCFdq/exec';
+    const PUBLIC_API_KEY = 'HEMA-API-7b9xQ2mL5rV8kN3pZ6';
+    const ACCESS_CODE = 'HEMA2026';
 
-        <div class="logo-footer">
-            <img src="logo.png" alt="HEMA Club Logo" onerror="this.style.display='none'">
-        </div>
-    </div>
+    const MEMBERS = [
+      'Helen Bearse','Bogdan Calin','Matthew Delaney','Jordan Dunne','Tamas Gal','Jack K','William Marshall','Glenn Moran','Oisin O\'Connor','Ilia Postolov','Jose Serrano','Ralph Delos Reyes','Sebastian Espinoza','Boris Galkin','Ali Sher Halim','Dmitrii Sazanov','Gavie (Man Ho Cheng)','Margherita Frezza','Maciej Czajowski','Conor McKeon','JUDE WOODFULL'
+    ];
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const state = { suddenDeath: [], adminCode: '', currentTournament: null, timer: null, timerMatchId: null, selectedQuality: {}, selectedPoints: {} };
 
-    <script>
-        // Club members
-        const members = [
-            "Helen Bearse", "Bogdan Calin", "Matthew Delaney", "Jordan Dunne", "Tamas Gal",
-            "Jack K", "William Marshall", "Glenn Moran", "Oisin O'Connor", "Ilia Postolov",
-            "Jose Serrano", "Ralph Delos Reyes", "Sebastian Espinoza", "Boris Galkin",
-            "Ali Sher Halim", "Dmitrii Sazanov", "Gavie (Man Ho Cheng)", "Margherita Frezza",
-            "Maciej Czajowski", "Conor McKeon", "JUDE WOODFULL"
-        ];
+    const $ = id => document.getElementById(id);
+    const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    const now = () => new Date().toISOString();
+    const makeId = prefix => prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 
-        // Access code (simple validation)
-        const ACCESS_CODE = "HEMA2026";
+    function showMessage(text, type = 'info') {
+      const el = $('message'); el.className = 'notice show ' + type; el.textContent = text;
+      clearTimeout(showMessage.timer); showMessage.timer = setTimeout(() => el.classList.remove('show'), 5500);
+    }
 
-        // Data storage (using localStorage for persistence)
-        let suddenDeathData = JSON.parse(localStorage.getItem('suddenDeathData')) || [];
-        let tournamentData = JSON.parse(localStorage.getItem('tournamentData')) || {};
+    async function api(action, payload = null, admin = false) {
+      if (PUBLIC_API_KEY === 'PASTE_YOUR_PUBLIC_API_KEY_HERE') throw new Error('Set PUBLIC_API_KEY in index.html before using the app.');
+      if (!payload) {
+        const url = API_URL + '?action=' + encodeURIComponent(action) + '&apiKey=' + encodeURIComponent(PUBLIC_API_KEY);
+        const res = await fetch(url); const data = await res.json(); if (!data.ok) throw new Error(data.error || 'Request failed'); return data;
+      }
+      const body = Object.assign({}, payload, { action, apiKey: PUBLIC_API_KEY });
+      if (admin) body.adminCode = state.adminCode;
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
+      const data = await res.json(); if (!data.ok) throw new Error(data.error || 'Request failed'); return data;
+    }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            populateMemberSelects();
-            populateParticipantCheckboxes();
-            updateLeaderboard();
-            updateUserHistory();
-            updateTargetAreas();
-            
-            // Set current month
-            const months = ["January", "February", "March", "April", "May", "June", 
-                           "July", "August", "September", "October", "November", "December"];
-            document.getElementById('sdMonth').value = months[new Date().getMonth()];
-        });
+    function populateSelect(id, values, selected) {
+      $(id).innerHTML = values.map(value => `<option value="${esc(value)}" ${value === selected ? 'selected' : ''}>${esc(value)}</option>`).join('');
+    }
 
-        function validateAccess() {
-            const code = document.getElementById('accessCode').value;
-            if (code === ACCESS_CODE) {
-                document.getElementById('passwordOverlay').style.display = 'none';
-            } else {
-                document.getElementById('loginError').style.display = 'block';
-            }
-        }
+    function init() {
+      const currentMonth = MONTHS[new Date().getMonth()];
+      $('sdName').innerHTML = '<option value="">Select your name</option>' + MEMBERS.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+      populateSelect('sdMonth', MONTHS, currentMonth); populateSelect('tournamentMonth', MONTHS, currentMonth);
+      $('participantList').innerHTML = MEMBERS.map((m, i) => `<label><input type="checkbox" value="${esc(m)}" id="member_${i}">${esc(m)}</label>`).join('');
+      document.querySelectorAll('.tab').forEach(button => button.addEventListener('click', () => openPanel(button.dataset.panel)));
+      $('sdName').addEventListener('change', renderSuddenHistory);
+      $('saveSudden').addEventListener('click', saveSuddenDeath);
+      $('adminLogin').addEventListener('click', unlockTournament);
+      $('tournamentFormat').addEventListener('change', () => $('finalsSetting').hidden = $('tournamentFormat').value !== 'two_pools');
+      $('createTournament').addEventListener('click', createTournament);
+      loadSuddenDeath();
+    }
 
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            event.target.classList.add('active');
-            
-            if (sectionId === 'leaderboard') {
-                updateLeaderboard();
-                updateTargetAreas();
-            }
-        }
+    function openPanel(id) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === id));
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.panel === id));
+      if (id === 'leaderboard') { renderLeaderboard(); renderTargets(); }
+    }
 
-        function populateMemberSelects() {
-            const selects = ['sdName'];
-            selects.forEach(id => {
-                const select = document.getElementById(id);
-                select.innerHTML = '<option value="">Select your name</option>';
-                members.forEach(member => {
-                    select.innerHTML += `<option value="${member}">${member}</option>`;
-                });
-            });
-        }
+    async function loadSuddenDeath() {
+      try { const result = await api('getSuddenDeath'); state.suddenDeath = result.data || []; renderSuddenHistory(); renderLeaderboard(); renderTargets(); }
+      catch (error) { showMessage('Could not load shared data: ' + error.message, 'error'); }
+    }
 
-        function populateParticipantCheckboxes() {
-            const container = document.getElementById('participantCheckboxes');
-            container.innerHTML = '';
-            members.forEach((member, index) => {
-                container.innerHTML += `
-                    <div style="margin-bottom: 8px;">
-                        <input type="checkbox" id="participant_${index}" value="${member}" style="width: auto; display: inline-block; margin-right: 10px;">
-                        <label for="participant_${index}" style="display: inline; color: #fff; font-weight: normal;">${member}</label>
-                    </div>
-                `;
-            });
-        }
+    async function saveSuddenDeath() {
+      const name = $('sdName').value, month = $('sdMonth').value, result = $('sdResult').value, location = $('sdLocation').value.trim();
+      if (!name) return showMessage('Select your name first.', 'error');
+      const button = $('saveSudden'); button.disabled = true;
+      const entry = { id: makeId('sd'), name, month, result, location, timestamp: now() };
+      try { await api('addSuddenDeath', { entry }); state.suddenDeath.push(entry); $('sdLocation').value = ''; renderSuddenHistory(); renderLeaderboard(); renderTargets(); showMessage('Sudden Death result saved to the club sheet.', 'success'); }
+      catch (error) { showMessage('Save failed: ' + error.message, 'error'); }
+      finally { button.disabled = false; }
+    }
 
-        function togglePoolSelection() {
-            const numPools = document.getElementById('numPools').value;
-            document.getElementById('poolASelection').style.display = numPools === '2' ? 'block' : 'none';
-            document.getElementById('poolBSelection').style.display = numPools === '2' ? 'block' : 'none';
-            
-            if (numPools === '2') {
-                populatePoolCheckboxes('poolA');
-                populatePoolCheckboxes('poolB');
-            }
-        }
+    function renderSuddenHistory() {
+      const name = $('sdName').value; const el = $('sdHistory');
+      if (!name) { el.innerHTML = 'Select your name to view history.'; return; }
+      const rows = state.suddenDeath.filter(r => r.name === name).slice().reverse();
+      if (!rows.length) { el.innerHTML = 'No bouts recorded yet.'; return; }
+      el.innerHTML = `<div class="scroll"><table><thead><tr><th>Month</th><th>Result</th><th>Target / cut location</th><th>Recorded</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.month)}</td><td>${r.result === 'win' ? '🏅 Win' : 'Loss'}</td><td>${esc(r.location || '—')}</td><td>${new Date(r.timestamp).toLocaleDateString()}</td></tr>`).join('')}</tbody></table></div>`;
+    }
 
-        function populatePoolCheckboxes(poolPrefix) {
-            const container = document.getElementById(`${poolPrefix}Checkboxes`);
-            container.innerHTML = '';
-            members.forEach((member, index) => {
-                container.innerHTML += `
-                    <div style="margin-bottom: 8px;">
-                        <input type="checkbox" id="${poolPrefix}_participant_${index}" value="${member}" style="width: auto; display: inline-block; margin-right: 10px;">
-                        <label for="${poolPrefix}_participant_${index}" style="display: inline; color: #fff; font-weight: normal;">${member}</label>
-                    </div>
-                `;
-            });
-        }
+    function suddenStats() {
+      const stats = Object.fromEntries(MEMBERS.map(n => [n, { name:n, wins:0, total:0 }]));
+      state.suddenDeath.forEach(r => { if (stats[r.name]) { stats[r.name].total++; if (r.result === 'win') stats[r.name].wins++; } });
+      return Object.values(stats).filter(s => s.total).sort((a,b) => (b.wins/b.total)-(a.wins/a.total) || b.wins-a.wins || a.name.localeCompare(b.name));
+    }
 
-        function addSuddenDeath() {
-            const name = document.getElementById('sdName').value;
-            const month = document.getElementById('sdMonth').value;
-            const result = document.getElementById('sdResult').value;
-            const location = document.getElementById('sdLocation').value;
+    function renderLeaderboard() {
+      const rows = suddenStats(); const el = $('leaderboardTable');
+      if (!rows.length) { el.innerHTML = '<p class="muted">No Sudden Death bouts have been recorded yet.</p>'; return; }
+      el.innerHTML = `<table><thead><tr><th>Rank</th><th>Fighter</th><th>Wins</th><th>Bouts</th><th>Win rate</th></tr></thead><tbody>${rows.map((s,i) => `<tr><td>${['🥇','🥈','🥉'][i] || i+1}</td><td>${esc(s.name)}</td><td>${s.wins}</td><td>${s.total}</td><td>${(100*s.wins/s.total).toFixed(1)}%</td></tr>`).join('')}</tbody></table>`;
+    }
 
-            if (!name) {
-                alert('Please select your name');
-                return;
-            }
+    function renderTargets() {
+      const map = {}; state.suddenDeath.forEach(r => { const key = (r.location || '').trim().toLowerCase(); if (key) map[key] = (map[key] || 0) + 1; });
+      const rows = Object.entries(map).sort((a,b) => b[1]-a[1]); const el = $('targetsTable');
+      el.innerHTML = rows.length ? `<table><thead><tr><th>Target / cut location</th><th>Times recorded</th></tr></thead><tbody>${rows.map(([name,count]) => `<tr><td>${esc(name)}</td><td>${count}</td></tr>`).join('')}</tbody></table>` : '<p class="muted">No target locations have been recorded yet.</p>';
+    }
 
-            const entry = {
-                id: Date.now(),
-                name,
-                month,
-                result,
-                location,
-                timestamp: new Date().toISOString()
-            };
+    async function unlockTournament() {
+      const code = $('adminCode').value; if (!code) return showMessage('Enter the tournament admin code.', 'error');
+      state.adminCode = code;
+      try {
+        await api('getTournaments');
+        $('adminGate').hidden = true; $('tournamentControls').hidden = false; showMessage('Tournament controls unlocked for this browser session.', 'success');
+      } catch (error) { state.adminCode = ''; showMessage('Could not connect to the backend: ' + error.message, 'error'); }
+    }
 
-            suddenDeathData.push(entry);
-            localStorage.setItem('suddenDeathData', JSON.stringify(suddenDeathData));
+    function selectedParticipants() { return [...document.querySelectorAll('#participantList input:checked')].map(i => i.value); }
+    function shuffle(items) { const a = items.slice(); for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+    function roundRobin(players, stage, pool, startNumber, tournamentId) {
+      const matches=[]; let number=startNumber;
+      for (let i=0;i<players.length-1;i++) for (let j=i+1;j<players.length;j++) matches.push(newMatch(players[i], players[j], stage, pool, number++, tournamentId));
+      return matches;
+    }
+    function newMatch(fighter1, fighter2, stage, pool, matchNumber, tournamentId) {
+      return { tournamentId, matchId: makeId('match'), stage, pool, matchNumber, fighter1, fighter2, durationSeconds:120, remainingSeconds:120, status:'not_started', fighter1Points:0, fighter2Points:0, fighter1Clean:0, fighter1Dirty:0, fighter2Clean:0, fighter2Dirty:0, winner:'', suddenDeathRequired:false, startedAt:'', endedAt:'', createdAt:now() };
+    }
 
-            document.getElementById('sdSuccess').style.display = 'block';
-            setTimeout(() => {
-                document.getElementById('sdSuccess').style.display = 'none';
-            }, 3000);
+    async function createTournament() {
+      const participants = selectedParticipants(); if (participants.length < 2) return showMessage('Select at least two participants.', 'error');
+      const format = $('tournamentFormat').value, finalsEnabled = format === 'two_pools' && $('finalsEnabled').checked;
+      if (format === 'two_pools' && participants.length < 4) return showMessage('Two pools require at least four participants.', 'error');
+      const tournamentId = makeId('tournament'); const tournament = { tournamentId, name:$('tournamentName').value.trim() || 'In-house Tournament', month:$('tournamentMonth').value, year:String(new Date().getFullYear()), format, finalsEnabled, status:'active', createdAt:now() };
+      const shuffled = shuffle(participants); let matches=[];
+      if (format === 'one_pool') matches = roundRobin(shuffled, 'Pool', 'Pool', 1, tournamentId);
+      else { const a=[], b=[]; shuffled.forEach((p,i) => (i%2 ? b : a).push(p)); matches = roundRobin(a,'Pool','Pool A',1,tournamentId).concat(roundRobin(b,'Pool','Pool B', a.length*(a.length-1)/2+1,tournamentId)); }
+      const button=$('createTournament'); button.disabled=true;
+      try { await api('createTournament',{tournament,matches},true); state.currentTournament={tournament,matches,exchanges:[]}; renderTournament(); showMessage('Fixtures created and saved to Google Sheets.', 'success'); }
+      catch(error) { showMessage('Tournament creation failed: '+error.message,'error'); }
+      finally { button.disabled=false; }
+    }
 
-            document.getElementById('sdLocation').value = '';
-            updateUserHistory();
-        }
+    function currentMatches() { return state.currentTournament ? state.currentTournament.matches : []; }
+    function matchById(id) { return currentMatches().find(m => m.matchId === id); }
+    function matchExchanges(id) { return (state.currentTournament?.exchanges || []).filter(e => e.matchId === id).sort((a,b) => String(a.timestamp).localeCompare(String(b.timestamp))); }
 
-        function updateUserHistory() {
-            const container = document.getElementById('userHistory');
-            const currentName = document.getElementById('sdName').value;
-            
-            if (!currentName) {
-                container.innerHTML = '<p style="color: rgba(255,255,255,0.7);">Select your name to see your history</p>';
-                return;
-            }
+    function renderTournament() {
+      const data = state.currentTournament; if (!data) return; $('tournamentView').hidden=false;
+      $('tournamentTitle').textContent=data.tournament.name;
+      $('tournamentMeta').textContent=`${data.tournament.month} ${data.tournament.year} · ${data.tournament.format === 'one_pool' ? 'One-pool round robin' : 'Two pools'}${data.tournament.finalsEnabled ? ' · Finals enabled' : ''}`;
+      renderPoolStandings(); renderMatches(); renderOverall();
+    }
 
-            const userEntries = suddenDeathData.filter(e => e.name === currentName);
-            
-            if (userEntries.length === 0) {
-                container.innerHTML = '<p style="color: rgba(255,255,255,0.7);">No bouts logged yet</p>';
-                return;
-            }
+    function statsForMatches(matches) {
+      const stats={}; matches.forEach(m => {
+        [m.fighter1,m.fighter2].forEach(n => { if (!stats[n]) stats[n]={name:n,wins:0,losses:0,matchPoints:0,clean:0,dirty:0,bouts:0}; });
+        stats[m.fighter1].matchPoints += Number(m.fighter1Points||0); stats[m.fighter1].clean += Number(m.fighter1Clean||0); stats[m.fighter1].dirty += Number(m.fighter1Dirty||0);
+        stats[m.fighter2].matchPoints += Number(m.fighter2Points||0); stats[m.fighter2].clean += Number(m.fighter2Clean||0); stats[m.fighter2].dirty += Number(m.fighter2Dirty||0);
+        if (m.status === 'completed') { stats[m.fighter1].bouts++; stats[m.fighter2].bouts++; if (m.winner === m.fighter1) {stats[m.fighter1].wins++;stats[m.fighter2].losses++;} else if(m.winner === m.fighter2) {stats[m.fighter2].wins++;stats[m.fighter1].losses++;} }
+      });
+      return Object.values(stats).sort((a,b)=>b.wins-a.wins||b.matchPoints-a.matchPoints||b.clean-a.clean||a.name.localeCompare(b.name));
+    }
+    function standingsTable(stats) { return `<div class="scroll"><table><thead><tr><th>#</th><th>Fighter</th><th>W</th><th>L</th><th>Match pts</th><th>Clean</th><th>Dirty</th></tr></thead><tbody>${stats.map((s,i)=>`<tr><td>${i+1}</td><td>${esc(s.name)}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.matchPoints}</td><td>${s.clean}</td><td>${s.dirty}</td></tr>`).join('')}</tbody></table></div>`; }
+    function renderPoolStandings() {
+      const matches=currentMatches().filter(m=>m.stage==='Pool'); const el=$('poolStandings');
+      if (!matches.length) {el.innerHTML='<p class="muted">No pool matches available.</p>';return;}
+      const groups={};matches.forEach(m=>(groups[m.pool] ||= []).push(m));
+      el.innerHTML=Object.entries(groups).map(([pool,ms])=>`<h3>${esc(pool)}</h3>${standingsTable(statsForMatches(ms))}`).join('');
+    }
 
-            container.innerHTML = '<table><thead><tr><th>Month</th><th>Result</th><th>Location</th></tr></thead><tbody>';
-            userEntries.reverse().forEach(entry => {
-                const resultClass = entry.result === 'win' ? 'win' : 'loss';
-                const resultIcon = entry.result === 'win' ? '🎉' : '😔';
-                container.innerHTML += `
-                    <tr>
-                        <td>${entry.month}</td>
-                        <td class="${resultClass}">${resultIcon} ${entry.result.toUpperCase()}</td>
-                        <td>${entry.location || '-'}</td>
-                    </tr>
-                `;
-            });
-            container.innerHTML += '</tbody></table>';
-        }
+    function formatTime(seconds) { seconds=Math.max(0,Math.round(Number(seconds)||0)); return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0'); }
+    function renderMatches() {
+      const el=$('matchesList'); const matches=currentMatches().slice().sort((a,b)=>Number(a.matchNumber)-Number(b.matchNumber));
+      el.innerHTML=matches.map(m=>matchCard(m)).join('');
+      matches.forEach(m=>bindMatch(m));
+    }
+    function matchCard(m) {
+      const isSD = m.status==='sudden_death'; const isCompleted=m.status==='completed'; const quality=state.selectedQuality[m.matchId]||'clean'; const points=state.selectedPoints[m.matchId]||1;
+      const exchanges=matchExchanges(m.matchId);
+      return `<article class="card" id="card_${esc(m.matchId)}">
+        <h3>Match ${esc(m.matchNumber)} · ${esc(m.stage)}${m.pool ? ' · '+esc(m.pool):''} <span class="status">${esc(isSD?'Sudden death':m.status.replace('_',' '))}</span></h3>
+        <div class="timer ${isSD?'overtime':''}" id="timer_${esc(m.matchId)}">${isSD?'SUDDEN DEATH':formatTime(m.remainingSeconds)}</div>
+        <div class="match-score"><div><div class="fighter-name">${esc(m.fighter1)}</div><div class="score-number">${m.fighter1Points}</div><div class="score-meta">Clean: ${m.fighter1Clean} · Dirty: ${m.fighter1Dirty}</div></div><div class="vs">VS</div><div><div class="fighter-name">${esc(m.fighter2)}</div><div class="score-number">${m.fighter2Points}</div><div class="score-meta">Clean: ${m.fighter2Clean} · Dirty: ${m.fighter2Dirty}</div></div></div>
+        ${isCompleted ? `<p><strong>Winner:</strong> ${esc(m.winner)}${m.suddenDeathRequired ? ' (sudden death)' : ''}</p>` : `<div class="button-row"><button class="small match-start" data-id="${esc(m.matchId)}">${m.status==='not_started'?'Start 2-minute match':'Resume'}</button><button class="small outline match-pause" data-id="${esc(m.matchId)}">Pause</button><button class="small outline match-end" data-id="${esc(m.matchId)}">End / check result</button></div>
+        <div class="exchange-controls" style="margin-top:12px"><div><label>Scoring fighter</label><select id="fighter_${esc(m.matchId)}"><option value="${esc(m.fighter1)}">${esc(m.fighter1)}</option><option value="${esc(m.fighter2)}">${esc(m.fighter2)}</option></select></div><div><label>Exchange</label><div class="quality-row"><button class="small choice ${quality==='clean'?'selected':''} quality" data-id="${esc(m.matchId)}" data-quality="clean">Clean</button><button class="small choice ${quality==='dirty'?'selected':''} quality" data-id="${esc(m.matchId)}" data-quality="dirty">Dirty</button></div></div><div><label>Points</label><div class="point-row"><button class="small choice ${points===1?'selected':''}" data-id="${esc(m.matchId)}" data-points="1" ${quality==='dirty'?'disabled':''}>1 point</button><button class="small choice ${points===4?'selected':''}" data-id="${esc(m.matchId)}" data-points="4" ${quality==='dirty'?'disabled':''}>4 points</button></div></div><div><button class="record-exchange" data-id="${esc(m.matchId)}">Record exchange</button></div></div>`}
+        <div class="exchange-log">${exchanges.length ? exchanges.map(e=>`<div class="exchange-item"><span>${esc(e.fighter)} — <strong>${esc(e.quality)}</strong> — ${esc(e.points)} pt${Number(e.points)===1?'':'s'}${String(e.isSuddenDeath)==='true'||e.isSuddenDeath===true?' · SUDDEN DEATH':''}</span><span>${e.isSuddenDeath ? 'SD' : formatTime(e.remainingSeconds)} remaining</span></div>`).join('') : '<p class="muted">No scoring exchanges recorded.</p>'}</div>
+      </article>`;
+    }
 
-        function updateLeaderboard() {
-            const stats = {};
-            members.forEach(member => {
-                stats[member] = { wins: 0, total: 0 };
-            });
+    function bindMatch(m) {
+      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} .match-start`).forEach(b=>b.onclick=()=>startTimer(m.matchId));
+      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} .match-pause`).forEach(b=>b.onclick=()=>pauseTimer(m.matchId));
+      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} .match-end`).forEach(b=>b.onclick=()=>endMatch(m.matchId));
+      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} .quality`).forEach(b=>b.onclick=()=>{state.selectedQuality[m.matchId]=b.dataset.quality;if(b.dataset.quality==='dirty')state.selectedPoints[m.matchId]=1;renderMatches();});
+      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} [data-points]`).forEach(b=>b.onclick=()=>{state.selectedPoints[m.matchId]=Number(b.dataset.points);renderMatches();});
+      document.querySelectorAll(`#card_${CSS.escape(m.matchId)} .record-exchange`).forEach(b=>b.onclick=()=>recordExchange(m.matchId));
+    }
 
-            suddenDeathData.forEach(entry => {
-                if (stats[entry.name]) {
-                    stats[entry.name].total++;
-                    if (entry.result === 'win') {
-                        stats[entry.name].wins++;
-                    }
-                }
-            });
+    async function updateMatch(match) { const response=await api('updateMatch',{match},true); Object.assign(match,response.match); }
+    async function startTimer(id) {
+      const m=matchById(id); if (!m||m.status==='completed'||m.status==='sudden_death')return;
+      if (state.timer) clearInterval(state.timer); m.status='in_progress'; if(!m.startedAt)m.startedAt=now();
+      try { await updateMatch(m); } catch(e){showMessage('Could not start timer: '+e.message,'error');return; }
+      state.timerMatchId=id; state.timer=setInterval(async()=>{
+        const active=matchById(id); if(!active||active.status!=='in_progress')return;
+        active.remainingSeconds=Math.max(0,Number(active.remainingSeconds)-1); const display=$('timer_'+id);if(display)display.textContent=formatTime(active.remainingSeconds);
+        if(active.remainingSeconds===0){clearInterval(state.timer);state.timer=null;await timeExpired(id);}
+      },1000); renderMatches();
+    }
+    async function pauseTimer(id) { const m=matchById(id); if(!m)return; if(state.timerMatchId===id&&state.timer){clearInterval(state.timer);state.timer=null;} if(m.status==='in_progress'){m.status='paused';try{await updateMatch(m);showMessage('Timer paused.','info');}catch(e){showMessage(e.message,'error');}} renderMatches(); }
+    async function timeExpired(id) { const m=matchById(id); if(!m)return; if(Number(m.fighter1Points)===Number(m.fighter2Points)){m.status='sudden_death';m.suddenDeathRequired=true;try{await updateMatch(m);showMessage('Time expired tied: first scoring exchange wins sudden death.','info');}catch(e){showMessage(e.message,'error');}}else{m.status='completed';m.winner=Number(m.fighter1Points)>Number(m.fighter2Points)?m.fighter1:m.fighter2;m.endedAt=now();try{await updateMatch(m);showMessage('Time expired. Winner recorded: '+m.winner,'success');}catch(e){showMessage(e.message,'error');}} renderTournament(); }
+    async function endMatch(id) { const m=matchById(id);if(!m)return; await pauseTimer(id); if(Number(m.fighter1Points)===Number(m.fighter2Points)){m.status='sudden_death';m.suddenDeathRequired=true;try{await updateMatch(m);showMessage('Match is tied: enter the first sudden-death score.','info');}catch(e){showMessage(e.message,'error');}}else{m.status='completed';m.winner=Number(m.fighter1Points)>Number(m.fighter2Points)?m.fighter1:m.fighter2;m.endedAt=now();try{await updateMatch(m);showMessage('Winner recorded: '+m.winner,'success');}catch(e){showMessage(e.message,'error');}}renderTournament(); }
+    async function recordExchange(id) {
+      const m=matchById(id); if(!m||m.status==='completed')return; if(m.status==='in_progress') await pauseTimer(id);
+      const fighter=$('fighter_'+id).value; const quality=state.selectedQuality[id]||'clean'; const points=quality==='dirty'?1:(state.selectedPoints[id]||1); const isSuddenDeath=m.status==='sudden_death';
+      const exchange={tournamentId:m.tournamentId,matchId:id,exchangeId:makeId('exchange'),fighter,quality,points,remainingSeconds:m.remainingSeconds,isSuddenDeath,timestamp:now()};
+      try { const response=await api('recordExchange',{exchange},true); Object.assign(m,response.match); state.currentTournament.exchanges.push(exchange); if(isSuddenDeath)showMessage('Sudden-death winner: '+fighter,'success'); else showMessage('Exchange recorded. Resume when ready.','success'); renderTournament(); }
+      catch(e){showMessage('Could not record exchange: '+e.message,'error');}
+    }
 
-            const sorted = Object.entries(stats)
-                .filter(([_, data]) => data.total > 0)
-                .sort((a, b) => {
-                    const avgA = a[1].wins / a[1].total;
-                    const avgB = b[1].wins / b[1].total;
-                    return avgB - avgA || b[1].wins - a[1].wins;
-                });
+    function renderOverall() {
+      const data=state.currentTournament;if(!data)return;const all=currentMatches();const completed=all.filter(m=>m.status==='completed');const stats=statsForMatches(data.tournament.format==='one_pool'?all:completed.filter(m=>m.stage!=='Pool'));
+      let resultStats;
+      if(data.tournament.format==='one_pool') resultStats=statsForMatches(all);
+      else {
+        const final=completed.find(m=>m.stage==='Final'), third=completed.find(m=>m.stage==='Third Place');
+        if(final){const champ=final.winner, runner=final.winner===final.fighter1?final.fighter2:final.fighter1;let thirdName=third?third.winner:'';resultStats=[{name:champ},{name:runner},...(thirdName?[{name:thirdName}]:[])];}
+        else resultStats=[];
+      }
+      $('podium').innerHTML=resultStats.length>=3?`<div class="podium-place"><div class="podium-block second">2</div><strong>${esc(resultStats[1].name)}</strong></div><div class="podium-place"><div class="podium-block first">1</div><strong>${esc(resultStats[0].name)}</strong></div><div class="podium-place"><div class="podium-block third">3</div><strong>${esc(resultStats[2].name)}</strong></div>`:'';
+      $('overallStandings').innerHTML=data.tournament.format==='one_pool'?standingsTable(statsForMatches(all)):(resultStats.length?`<table><thead><tr><th>Place</th><th>Fighter</th></tr></thead><tbody>${resultStats.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name)}</td></tr>`).join('')}</tbody></table>`:'<p class="muted">Complete the pool stage; elimination fixtures are displayed when the final stage is created.</p>');
+    }
 
-            const tbody = document.getElementById('leaderboardBody');
-            tbody.innerHTML = '';
-            
-            sorted.forEach(([name, data], index) => {
-                const avg = (data.wins / data.total * 100).toFixed(1);
-                const rank = index + 1;
-                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${medal}</td>
-                        <td>${name}</td>
-                        <td class="win">${data.wins}</td>
-                        <td>${data.total}</td>
-                        <td><strong>${avg}%</strong></td>
-                    </tr>
-                `;
-            });
-        }
-
-        function updateTargetAreas() {
-            const areas = {};
-            suddenDeathData.forEach(entry => {
-                if (entry.location) {
-                    const loc = entry.location.toLowerCase().trim();
-                    areas[loc] = (areas[loc] || 0) + 1;
-                }
-            });
-
-            const sorted = Object.entries(areas).sort((a, b) => b[1] - a[1]);
-            const container = document.getElementById('targetAreas');
-            
-            if (sorted.length === 0) {
-                container.innerHTML = '<p style="color: rgba(255,255,255,0.7);">No target areas logged yet</p>';
-                return;
-            }
-
-            container.innerHTML = '<table><thead><tr><th>Target Area</th><th>Frequency</th></tr></thead><tbody>';
-            sorted.forEach(([area, count]) => {
-                container.innerHTML += `<tr><td>${area}</td><td>${count}</td></tr>`;
-            });
-            container.innerHTML += '</tbody></table>';
-        }
-
-        function generateMatches() {
-            const numPools = document.getElementById('numPools').value;
-            let participants = [];
-
-            if (numPools === '1') {
-                document.querySelectorAll('#participantCheckboxes input:checked').forEach(cb => {
-                    participants.push(cb.value);
-                });
-            } else {
-                document.querySelectorAll('#poolACheckboxes input:checked').forEach(cb => {
-                    participants.push({ name: cb.value, pool: 'A' });
-                });
-                document.querySelectorAll('#poolBCheckboxes input:checked').forEach(cb => {
-                    participants.push({ name: cb.value, pool: 'B' });
-                });
-            }
-
-            if (participants.length < 2) {
-                alert('Please select at least 2 participants');
-                return;
-            }
-
-            // Shuffle and create matches
-            participants = participants.sort(() => Math.random() - 0.5);
-            
-            const matches = [];
-            const matchData = {};
-
-            if (numPools === '1') {
-                // Round-robin style for single pool
-                for (let i = 0; i < participants.length - 1; i++) {
-                    for (let j = i + 1; j < participants.length; j++) {
-                        const matchId = `match_${Date.now()}_${i}_${j}`;
-                        matches.push({
-                            id: matchId,
-                            fighter1: participants[i],
-                            fighter2: participants[j],
-                            pool: 'Finals'
-                        });
-                        matchData[matchId] = {
-                            fighter1_clean: 0,
-                            fighter1_dirty: 0,
-                            fighter2_clean: 0,
-                            fighter2_dirty: 0,
-                            winner: null,
-                            fighter1_points: 0,
-                            fighter2_points: 0
-                        };
-                    }
-                }
-            } else {
-                // Separate pools
-                const poolA = participants.filter(p => p.pool === 'A').map(p => p.name);
-                const poolB = participants.filter(p => p.pool === 'B').map(p => p.name);
-
-                [poolA, poolB].forEach((pool, poolIndex) => {
-                    const poolName = poolIndex === 0 ? 'A' : 'B';
-                    for (let i = 0; i < pool.length - 1; i++) {
-                        for (let j = i + 1; j < pool.length; j++) {
-                            const matchId = `match_${poolName}_${Date.now()}_${i}_${j}`;
-                            matches.push({
-                                id: matchId,
-                                fighter1: pool[i],
-                                fighter2: pool[j],
-                                pool: `Pool ${poolName}`
-                            });
-                            matchData[matchId] = {
-                                fighter1_clean: 0,
-                                fighter1_dirty: 0,
-                                fighter2_clean: 0,
-                                fighter2_dirty: 0,
-                                winner: null,
-                                fighter1_points: 0,
-                                fighter2_points: 0
-                            };
-                        }
-                    }
-                });
-            }
-
-            tournamentData.matches = matches;
-            tournamentData.matchData = matchData;
-            tournamentData.completed = {};
-
-            displayMatches(matches);
-            document.getElementById('matchesContainer').classList.remove('hidden');
-        }
-
-        function displayMatches(matches) {
-            const container = document.getElementById('matchesList');
-            container.innerHTML = '';
-
-            matches.forEach((match, index) => {
-                const matchId = match.id;
-                const isCompleted = tournamentData.completed[matchId];
-                
-                container.innerHTML += `
-                    <div class="match-card" id="match_${matchId}">
-                        <div class="match-header">
-                            <span>Match ${index + 1} - ${match.pool}</span>
-                            ${isCompleted ? '<span class="success">✓ Completed</span>' : ''}
-                        </div>
-                        <div style="text-align: center; margin-bottom: 15px; font-size: 1.3em; font-weight: bold; color: #fff;">
-                            ${match.fighter1} <span style="color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5);">VS</span> ${match.fighter2}
-                        </div>
-                        <div class="match-stats">
-                            <div class="stat-box">
-                                <label>${match.fighter1}</label>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px;">
-                                    <div>
-                                        <label style="font-size: 0.8em;">Clean</label>
-                                        <input type="number" id="${matchId}_f1_clean" value="${tournamentData.matchData[matchId].fighter1_clean}" min="0">
-                                    </div>
-                                    <div>
-                                        <label style="font-size: 0.8em;">Dirty</label>
-                                        <input type="number" id="${matchId}_f1_dirty" value="${tournamentData.matchData[matchId].fighter1_dirty}" min="0">
-                                    </div>
-                                </div>
-                                <label style="font-size: 0.9em;">Points: <span id="${matchId}_f1_points">${tournamentData.matchData[matchId].fighter1_points}</span></label>
-                            </div>
-                            <div class="stat-box">
-                                <label>${match.fighter2}</label>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px;">
-                                    <div>
-                                        <label style="font-size: 0.8em;">Clean</label>
-                                        <input type="number" id="${matchId}_f2_clean" value="${tournamentData.matchData[matchId].fighter2_clean}" min="0">
-                                    </div>
-                                    <div>
-                                        <label style="font-size: 0.8em;">Dirty</label>
-                                        <input type="number" id="${matchId}_f2_dirty" value="${tournamentData.matchData[matchId].fighter2_dirty}" min="0">
-                                    </div>
-                                </div>
-                                <label style="font-size: 0.9em;">Points: <span id="${matchId}_f2_points">${tournamentData.matchData[matchId].fighter2_points}</span></label>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Winner</label>
-                            <select id="${matchId}_winner" onchange="updatePoints('${matchId}')" style="background: rgba(255,255,255,0.9); color: #800020;">
-                                <option value="">Select winner</option>
-                                <option value="1" ${tournamentData.matchData[matchId].winner === '1' ? 'selected' : ''}>${match.fighter1}</option>
-                                <option value="2" ${tournamentData.matchData[matchId].winner === '2' ? 'selected' : ''}>${match.fighter2}</option>
-                            </select>
-                        </div>
-                        <button onclick="saveMatch('${matchId}')" ${isCompleted ? 'class="secondary"' : ''}>
-                            ${isCompleted ? 'Update Match' : 'Save Match'}
-                        </button>
-                    </div>
-                `;
-            });
-        }
-
-        function updatePoints(matchId) {
-            const winner = document.getElementById(`${matchId}_winner`).value;
-            const f1Clean = parseInt(document.getElementById(`${matchId}_f1_clean`).value) || 0;
-            const f1Dirty = parseInt(document.getElementById(`${matchId}_f1_dirty`).value) || 0;
-            const f2Clean = parseInt(document.getElementById(`${matchId}_f2_clean`).value) || 0;
-            const f2Dirty = parseInt(document.getElementById(`${matchId}_f2_dirty`).value) || 0;
-
-            // Points: Clean = 1, Dirty = 0.5
-            const f1Points = f1Clean * 1 + f1Dirty * 0.5;
-            const f2Points = f2Clean * 1 + f2Dirty * 0.5;
-
-            document.getElementById(`${matchId}_f1_points`).textContent = f1Points.toFixed(1);
-            document.getElementById(`${matchId}_f2_points`).textContent = f2Points.toFixed(1);
-
-            tournamentData.matchData[matchId].fighter1_points = f1Points;
-            tournamentData.matchData[matchId].fighter2_points = f2Points;
-            tournamentData.matchData[matchId].winner = winner;
-        }
-
-        function saveMatch(matchId) {
-            updatePoints(matchId);
-            
-            const winner = document.getElementById(`${matchId}_winner`).value;
-            if (!winner) {
-                alert('Please select a winner');
-                return;
-            }
-
-            const f1Clean = parseInt(document.getElementById(`${matchId}_f1_clean`).value) || 0;
-            const f1Dirty = parseInt(document.getElementById(`${matchId}_f1_dirty`).value) || 0;
-            const f2Clean = parseInt(document.getElementById(`${matchId}_f2_clean`).value) || 0;
-            const f2Dirty = parseInt(document.getElementById(`${matchId}_f2_dirty`).value) || 0;
-
-            tournamentData.matchData[matchId] = {
-                fighter1_clean: f1Clean,
-                fighter1_dirty: f1Dirty,
-                fighter2_clean: f2Clean,
-                fighter2_dirty: f2Dirty,
-                winner: winner,
-                fighter1_points: tournamentData.matchData[matchId].fighter1_points,
-                fighter2_points: tournamentData.matchData[matchId].fighter2_points
-            };
-
-            tournamentData.completed[matchId] = true;
-            localStorage.setItem('tournamentData', JSON.stringify(tournamentData));
-
-            displayMatches(tournamentData.matches);
-            calculateFinalStandings();
-        }
-
-        function calculateFinalStandings() {
-            const fighterStats = {};
-
-            tournamentData.matches.forEach(match => {
-                if (!tournamentData.completed[match.id]) return;
-
-                const data = tournamentData.matchData[match.id];
-                const f1 = match.fighter1;
-                const f2 = match.fighter2;
-
-                if (!fighterStats[f1]) {
-                    fighterStats[f1] = { wins: 0, losses: 0, points: 0, clean: 0, dirty: 0 };
-                }
-                if (!fighterStats[f2]) {
-                    fighterStats[f2] = { wins: 0, losses: 0, points: 0, clean: 0, dirty: 0 };
-                }
-
-                fighterStats[f1].points += data.fighter1_points;
-                fighterStats[f1].clean += data.fighter1_clean;
-                fighterStats[f1].dirty += data.fighter1_dirty;
-
-                fighterStats[f2].points += data.fighter2_points;
-                fighterStats[f2].clean += data.fighter2_clean;
-                fighterStats[f2].dirty += data.fighter2_dirty;
-
-                if (data.winner === '1') {
-                    fighterStats[f1].wins++;
-                    fighterStats[f2].losses++;
-                } else if (data.winner === '2') {
-                    fighterStats[f2].wins++;
-                    fighterStats[f1].losses++;
-                }
-            });
-
-            const sorted = Object.entries(fighterStats).sort((a, b) => {
-                if (b[1].wins !== a[1].wins) return b[1].wins - a[1].wins;
-                if (b[1].points !== a[1].points) return b[1].points - a[1].points;
-                return b[1].clean - a[1].clean;
-            });
-
-            // Display podium
-            const podium = document.getElementById('podiumDisplay');
-            podium.innerHTML = '';
-            
-            if (sorted.length >= 3) {
-                podium.innerHTML = `
-                    <div class="podium-place">
-                        <div class="podium-block second">2</div>
-                        <div class="podium-name">${sorted[1][0]}</div>
-                    </div>
-                    <div class="podium-place">
-                        <div class="podium-block first">1</div>
-                        <div class="podium-name">${sorted[0][0]}</div>
-                    </div>
-                    <div class="podium-place">
-                        <div class="podium-block third">3</div>
-                        <div class="podium-name">${sorted[2][0]}</div>
-                    </div>
-                `;
-            } else if (sorted.length === 2) {
-                podium.innerHTML = `
-                    <div class="podium-place">
-                        <div class="podium-block first">1</div>
-                        <div class="podium-name">${sorted[0][0]}</div>
-                    </div>
-                    <div class="podium-place">
-                        <div class="podium-block second">2</div>
-                        <div class="podium-name">${sorted[1][0]}</div>
-                    </div>
-                `;
-            } else if (sorted.length === 1) {
-                podium.innerHTML = `
-                    <div class="podium-place">
-                        <div class="podium-block first">1</div>
-                        <div class="podium-name">${sorted[0][0]}</div>
-                    </div>
-                `;
-            }
-
-            // Display full standings
-            const standings = document.getElementById('finalStandings');
-            standings.innerHTML = '<table><thead><tr><th>Place</th><th>Name</th><th>Wins</th><th>Losses</th><th>Points</th></tr></thead><tbody>';
-            
-            sorted.forEach(([name, stats], index) => {
-                const place = index + 1;
-                const medal = place === 1 ? '🥇' : place === 2 ? '🥈' : place === 3 ? '🥉' : place;
-                standings.innerHTML += `
-                    <tr>
-                        <td>${medal}</td>
-                        <td>${name}</td>
-                        <td class="win">${stats.wins}</td>
-                        <td class="loss">${stats.losses}</td>
-                        <td><strong>${stats.points.toFixed(1)}</strong></td>
-                    </tr>
-                `;
-            });
-            standings.innerHTML += '</tbody></table>';
-        }
-
-        // Update history when name changes
-        document.getElementById('sdName').addEventListener('change', updateUserHistory);
-    </script>
+    init();
+  </script>
 </body>
 </html>
